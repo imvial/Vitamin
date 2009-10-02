@@ -1,8 +1,7 @@
 from helpers.vitaparse.lexical import BlockSpec, Spec, BlockTokenizer
 from helpers.vitaparse import exact, ntype, future, skip, maby, many, finish, \
     Ignore
-from vitamin.modules.tpl.chunks import ChainChunk, QualChunk, LoopChunk, \
-    BlockChunk, TextChunk, ModChunk, ExtendChunk
+from vitamin.modules.tpl.chunks import ChainChunk, QualChunk, LoopChunk, BlockChunk, TextChunk, ModChunk, ExtendChunk, IncludeChunk
 from vitamin.modules.tpl.context import ContextVar, ContextFunction
 from functools import partial
 
@@ -127,6 +126,7 @@ class TemplateAnalyzer():
         rin = skip(exact("in"))
         rblock = (exact("block"))
         rextend = skip(exact("extend"))
+        rinclude = skip(exact("include"))
         rmethod = skip(exact("method"))
         rstrict = exact("strict") >> (lambda t: t.value)
         rimplicit = exact("implicit") >> (lambda t: t.value)
@@ -222,14 +222,18 @@ class TemplateAnalyzer():
         #=======================================================================
         extend = (long_op + skip(exact("#")) + rextend + twospot + word + 
             maby(rmethod + twospot + (rstrict | rimplicit)) + long_cl) >> self.__extend
-        
+         #=======================================================================
+        # include chunk
+        #=======================================================================
+        include = (long_op + skip(exact("#")) + rinclude + twospot + word + 
+            maby(rmethod + twospot + (rstrict | rimplicit)) + long_cl) >> self.__include
         #=======================================================================
         # разный стафф
         #=======================================================================
         stuff.define(many(
             text | short_block | ifchunk | 
             forchunk | block_chunk | mod_chunk | 
-            comment | extend))           
+            comment | extend|include))           
         
         return [x for x in (stuff + finish()).parse(tokens)[0] if not isinstance(x, Ignore)]
     
@@ -326,4 +330,12 @@ class TemplateAnalyzer():
             if len(values) == 2:
                 method = values[1]
         return ExtendChunk(name, method)
-        
+    def __include(self, values):
+        method = "strict"
+        if isinstance(values, str):
+            name = values
+        else:
+            name = values[0]
+            if len(values) == 2:
+                method = values[1]
+        return IncludeChunk(name, method)   

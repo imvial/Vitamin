@@ -20,3 +20,11 @@ def pretty(string, lst=[]):
     lst = [x for x in lst if x.strip() != ""]
     return "\n".join(lst)
 
+def escape(string):
+    dictOfCode={}
+    string=string.replace("&","&amp")
+    string=string.replace(">","&gt")
+    string=string.replace("<","&lt")
+    for key,value in dictOfCode.items():
+        string=string.replace(key,value)
+    return string

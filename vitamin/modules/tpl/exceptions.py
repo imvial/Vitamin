@@ -23,4 +23,16 @@ class WrongTemplateIntegrity(Exception):
                     
     def __str__(self):
         return(self.value)
-
+    
+class LoopException(Exception):
+    """
+    Ошибка директивы include, образовался цикл
+    """
+    def __init__(self,parent,child):        
+        self.value = """
+       
+           Ошибка директивы #include, образовался цикл       
+           Некоторая помощь:
+                Ошибка в вызове шаблона {0} из шаблона {1}""".format(child,parent)
+    def __str__(self):
+        return(self.value)

@@ -334,6 +334,20 @@ class ExtendChunk(Chunk):
 
     def render(self, context, aggregator):
         return
-            
+    
+class IncludeChunk(Chunk):
+    """
+    Токен, определяющий включаемый шаблон.
+    Аналог одноименной директивы
+    Имеет единственный аттрибут - имя включаемого шаблона
+    """
+    def __init__(self, name, method):
+        Chunk.__init__(self)
+        self.name = name
+        self.method = method
+        self.children = []
+    
+    def render(self, context, aggregator):        
+        return         
     
     

@@ -1,5 +1,5 @@
-from vitamin.modules.tpl.chunks import BlockChunk, ExtendChunk
-
+from vitamin.modules.tpl.chunks import BlockChunk, ExtendChunk, IncludeChunk
+from vitamin.modules.tpl.exceptions import LoopException
 #$Rev: 117 $     
 #$Author: fnight $  
 #$Date: 2009-08-20 18:16:18 +0400 (Чт, 20 авг 2009) $ 
@@ -32,8 +32,12 @@ web-framework'a Django. Механизм наследования заключа
 Нет необходимости самостоятельно запускать наследование вслучае их 
 использования"""
 
-class Mutagen():
 
+    
+class Mutagen():
+    
+    listOfInclude=[]
+    
     def treeToDict(self, tokenList):
         
         """
@@ -43,12 +47,17 @@ class Mutagen():
         """
         
         lst = {x.name:x for x in tokenList \
-                if type(x) == BlockChunk}
+                if type(x) == BlockChunk}     
                 
         for token in tokenList:
             if token.children:
                 lst.update(self.treeToDict(token.children))
         return lst
+                  
+                   
+                    
+                    
+        
               
     def mutateBlock(self, baseBlocksDict, block) -> bool:
         
@@ -71,8 +80,47 @@ class Mutagen():
             return True
         except KeyError:
             return False
-      
-           
+        
+    def listInclude(self,tokenList,loader):
+         
+            lst=[]
+            haveInclud=False
+            for token in tokenList:
+                if isinstance(token, IncludeChunk):                    
+                    lst.extend(self.unpackingInclude(token, loader))
+                    haveInclud=True
+                else:
+                    if token.children:
+                        token.children=self.listInclude(token.children,loader)
+                    lst.append(token)
+            if not(haveInclud):
+                try:
+                    self.listOfInclude.pop()
+                except:
+                    pass
+            return lst 
+          
+    def unpackingInclude(self,includToken,loader):
+            """
+            Распаковывает IncludeChunk, возвращает набор Chunkов из влючаемого шаблона
+            Дабы совместить ее с системой наследования пропускает результат через mutate        
+            """
+            if includToken.name in self.listOfInclude:
+                raise LoopException(self.listOfInclude.pop(),includToken.name)
+            self.listOfInclude.append(includToken.name)                                   
+            includeTemplate = loader.load(includToken.name)
+            includeTemplate = self.mutate(loader, includeTemplate)
+            return includeTemplate.chunks
+        
+    def findInclude(self,loader,template):
+        """
+        Функция, исполняющая директиву include
+        Заменяет IncludeChunk на набор chunkов из включаемого шаблона        
+        """
+        template.chunks=self.listInclude(template.chunks, loader)
+        return template   
+                      
+                  
     def mutate(self, loader, template):
         
         """
@@ -95,8 +143,14 @@ class Mutagen():
             extendBlock = [token for token in template.chunks 
                 if type(token) == ExtendChunk][0]
         except IndexError:
-            return template
+            return self.findInclude(loader,template)
         
+                   
+                
+                
+                
+            
+            
         print("extending:", extendBlock.name)
         baseTemplate = loader.load(extendBlock.name)
         baseTemplate = self.mutate(loader, baseTemplate)    
@@ -105,7 +159,7 @@ class Mutagen():
                 if type(token) == BlockChunk and token.name in blocksDict]                
         [self.mutateBlock(blocksDict, x) for x in candidates]
         
-        return baseTemplate
+        return self.findInclude(loader,baseTemplate)
 
 mutate = Mutagen().mutate
       
