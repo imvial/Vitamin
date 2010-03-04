@@ -1,10 +1,7 @@
 from collections import UserDict, OrderedDict
 
 class MappedDict(UserDict):
-    
-    def __init__(self):
-        UserDict.__init__(self)
-        
+           
     def __getattribute__(self, name):
         getter = super(MappedDict, self).__getattribute__
         try:
