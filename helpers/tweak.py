@@ -99,6 +99,10 @@ class Section(MappedDict):
                 self[item] = value
                 return True
         return False
+    
+    def preload(self):
+        for name in self:
+            self.__getitem__(name)
 
         
 class Parameter():

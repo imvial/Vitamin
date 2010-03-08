@@ -27,7 +27,8 @@ class SitesManager():
         templates_part = "templates"        
         info_part = "info"
         config_part = "config"
-        logic_part = "logic"     
+        logic_part = "logic"
+        views_part = "views"  
            
         site = Site()
         site_path, site_name = os.path.split(path)
@@ -51,11 +52,9 @@ class SitesManager():
         
         if templates_part in parts:
             site.loadTemplates()
-#        site.loadLogic()
-#        site.loadViews()
-#        site.loadModels()
-        
-            
+        if views_part in parts:
+            site.loadViews()
+
     
     def unloadSite(self, name):
         pass

@@ -1,41 +1,21 @@
 from vitamin.interfaces import IModuleURL
 import re
 from .rule import Rule
-from vitamin.config import tweak, Parameter
 
 __all__ = ["RequestManager"]
 
-class RequestManager(IModuleURL):
+class RequestManager():
        
-    def __init__(self):
-        
-        self.ROUTES = Parameter()
-        tweak(self, "URL")
-        
+    def __init__(self):        
+       
         self.rules = []
-        self._add_rules(self.ROUTES)
-        
-    #===========================================================================
-    # go, info to IModule
-    #===========================================================================
-    
-    def go(self, context):
-        url = self._format(context.handler.getPath())
-        for rule in self.rules:
-            result, args = rule.check(url)
-            if result: 
-                print("Requested block '{0}' with args {1}".format(rule.block, args))
-                context.block = rule.block
-                context.arguments = args            
-        
-    def info(self): 
-        return "Standart vitamin URL module"
+        self._add_rules(self.ROUTES)        
     
     #===========================================================================
     # end
     #===========================================================================
 
-    def _block(self, matchobj):
+    def __block(self, matchobj):
         "Вытаскивает из matchobj имя первой группы и возвращает его"
         name = matchobj.group(1)
         vars = matchobj.group(3)
@@ -44,27 +24,27 @@ class RequestManager(IModuleURL):
         else:
             return "(?P<{0}>.*?)".format(name)
     
-    def _convert(self, pretty):    
+    def __convert(self, pretty):    
         """Преобразует pretty-look паттерн в вид питоновской
         регулярки"""   
-        return re.sub("[{](.*?)([[](.*)[]])?[}]", self._block, pretty)
+        return re.sub("[{](.*?)([[](.*)[]])?[}]", self.__block, pretty)
         
-    def _addRule(self, pretty, block):
+    def __add_rule(self, pretty, block):
         """Преобразует пару pretty-pattern и 
         func в объект Rule"""
-        pattern = self._format(self._convert(pretty))
+        pattern = self.__format(self.__convert(pretty))
         
         pattern += "$"
         print(pattern)
         rule = Rule(block, re.compile(pattern))
         self.rules.append(rule)
         
-    def _format(self, url):
+    def __format(self, url):
         if url == "/": return url
         if url.endswith("/"): return url[:-1]
         return url
                
-    def _add_rules(self, dictRoutes):
+    def update(self, dictRoutes):
         for pretty, block in dictRoutes.items():
-            self._addRule(pretty, block)
+            self.__add_rule(pretty, block)
 

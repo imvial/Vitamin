@@ -1,14 +1,6 @@
 from vitamin.modules.tpl import Templates
 from vitamin.siteinfo import SiteInfo
-
-class ModelsCollection():
-    pass
-
-class ViewsCollection():
-    pass
-
-class LogicCollection():
-    pass
+from vitamin.views import ViewSystem
 
 class Site():
     
@@ -60,8 +52,8 @@ class Site():
     def loadLogic(self, path):
         pass
     
-    def loadViews(self, path):
-        pass
+    def loadViews(self):
+        self.__views = ViewSystem(self.Config)
     
     def loadModels(self, path):
         pass
