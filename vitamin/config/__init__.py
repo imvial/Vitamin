@@ -1,7 +1,7 @@
-from helpers.tweak import prepare, Tweak, Parameter
+from helpers.tweak import prepare, tweak, Parameter, Section
 from vitamin.config import default
 import helpers.tweak
 
 prepare(default)
 
-__all__ = ["default", "messages", "Tweak", "Parameter", "Section"]
+__all__ = ["default", "messages", "tweak", "Parameter", "Section"]

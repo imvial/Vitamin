@@ -1,11 +1,12 @@
 from extra.server.interfaces.iprogram import IProgram
-from vitamin.config import Tweak, Parameter
+from vitamin.config import tweak, Parameter
 
-class ServerProgram(IProgram, Tweak("Loader")):
+class ServerProgram(IProgram):
     
-    def __init__(self):
+    def __init__(self):        
+        
         self.NEXT_NODE = Parameter()
-        self.tweak()
+        tweak(self, "Loader")
         
         self.program = self.NEXT_NODE()
     

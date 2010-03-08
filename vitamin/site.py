@@ -1,4 +1,5 @@
 from vitamin.modules.tpl import Templates
+from vitamin.siteinfo import SiteInfo
 
 class ModelsCollection():
     pass
@@ -42,13 +43,35 @@ class Site():
     @property
     def Config(self):
         return self.__config
+    
+    #===========================================================================
+    # Загрузчики
+    #===========================================================================
+    
+    def setConfig(self, config):
+        self.__config = config
+    
+    def setInfo(self, info):
+        self.__info = SiteInfo().read_info(info)
+    
+    def loadTemplates(self):
+        self.__templates = Templates(self.Config)
+    
+    def loadLogic(self, path):
+        pass
+    
+    def loadViews(self, path):
+        pass
+    
+    def loadModels(self, path):
+        pass
 
     def __init__(self):
         
-        self.__models = ModelsCollection()
-        self.__views = ViewsCollection()
-        self.__logic = LogicCollection()
-        self.__templates = Templates()
+        self.__models = None
+        self.__views = None
+        self.__logic = None
+        self.__templates = None
         self.__config = None
     
     

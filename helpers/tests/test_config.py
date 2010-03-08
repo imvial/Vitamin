@@ -1,18 +1,17 @@
 from unittest import TestCase
-from helpers.tweak import Tweak, Parameter, prepare
+from helpers.tweak import tweak, Parameter, prepare
 
 from helpers.tests import test_site_configuration
 prepare(test_site_configuration)
 
-class Simple(Tweak):
+class Simple():
     
     def __init__(self):
         
-        Tweak.__init__(self, "Simple")
         self.test = Parameter()
         self.test2 = Parameter(section="Another")
         self.default_one = Parameter(default=1)
-        self.tweak()
+        tweak(self, "Simple")
 
 class TweakTest(TestCase):
     

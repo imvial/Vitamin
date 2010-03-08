@@ -1,5 +1,5 @@
 from vitamin.modules.tpl.loader import ITemplateLoader
-from vitamin.config import Tweak, Parameter
+from vitamin.config import tweak, Parameter
 import os
 from vitamin.modules.tpl.template import Template
 
@@ -9,13 +9,17 @@ from vitamin.modules.tpl.template import Template
 
 #This file is part of Vitamin Project
 
-class FileLoader(ITemplateLoader, Tweak("Templates")):
+class FileLoader(ITemplateLoader):
     """Класс- загрузчик шаблонов из файлов"""
 
-    def __init__(self, folder=None):    
-        self.TEMPLATE_FOLDER = folder or Parameter()
+    def __init__(self, config):    
+        self.TEMPLATE_FOLDER = Parameter()
         self.TEMPLATE_EXTENSION = Parameter()
-        self.tweak()
+        tweak(self, "Templates", config)
+        
+        print("file.py: loader configured to use folder -> ",
+            self.TEMPLATE_FOLDER)
+        
         self.index = [x for x in os.listdir(self.TEMPLATE_FOLDER) 
             if not x.startswith(".") or not x.startswith("_")]
         self.tplExt = self.TEMPLATE_EXTENSION

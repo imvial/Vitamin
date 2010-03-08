@@ -1,4 +1,4 @@
-from vitamin.config import Tweak, Parameter
+from vitamin.config import tweak, Parameter
 from helpers.dictmapper import MappedDict
 import inspect
 
@@ -13,15 +13,16 @@ class RequestContext():
         self.block = None
         self.arguments = None
 
-class VtCore(Tweak("Main")):
+class VtCore():
     
     def __init__(self):
+        
         
         self.REGISTERED_MODULES = Parameter()
         self.REGISTERED_INTERFACES = Parameter()
         self.MODULE_IFACE_PREFFIX = Parameter("IModule")
         self.PRODUCTION_CHAIN = Parameter()
-        self.tweak()
+        tweak(self, "Main")
         
         self.modules = self.initModules()
         

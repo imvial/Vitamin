@@ -1,6 +1,6 @@
 from .exceptions import *
 from .lexical import *
-from helpers.log import ConsoleLogWriter, Levels
+#from helpers.log import ConsoleLogWriter, Levels
 from helpers.vitaparse.exceptions import ParserError, FunctionError, FatalParserError
 import sys
 

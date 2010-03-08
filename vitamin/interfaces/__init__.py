@@ -13,5 +13,11 @@ class IModuleURL(IModule):
     def __init__(self): pass
     @abstractmethod
     def go(self, context): pass
+    
+class IView(metaclass=ABCMeta):
+    
+    @abstractmethod
+    def __call__(self):
+        pass
 
-__all__ = ["IModuleURL"]
+__all__ = ["IModuleURL", "IView"]

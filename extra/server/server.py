@@ -9,14 +9,14 @@ server
 необходимые для работы параметры. 
 """
 
-from extra.server.config import messages, Tweak, Parameter
+from extra.server.config import messages, tweak, Parameter
 import os
 import sys
 
-class Server(Tweak("Server")):   
+class Server():   
 
-    def __init__(self):        
-        
+    def __init__(self):     
+ 
         self.PROGRAM = Parameter()        
         self.AUTORESTART = Parameter()
         self.SERVER_REALIZATION = Parameter()
@@ -27,7 +27,7 @@ class Server(Tweak("Server")):
         self.FILES_PROGRAM = Parameter([])
         self.PYTHON_BIN = Parameter(sys.executable)
          
-        self.tweak()
+        tweak(self, "Server")
         
         #инициализируем программу
         self.PROGRAM = self.PROGRAM()

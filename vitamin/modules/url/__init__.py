@@ -1,15 +1,16 @@
 from vitamin.interfaces import IModuleURL
 import re
 from .rule import Rule
-from vitamin.config import Tweak, Parameter
+from vitamin.config import tweak, Parameter
 
 __all__ = ["RequestManager"]
 
-class RequestManager(IModuleURL, Tweak("URL")):
+class RequestManager(IModuleURL):
        
     def __init__(self):
+        
         self.ROUTES = Parameter()
-        self.tweak()
+        tweak(self, "URL")
         
         self.rules = []
         self._add_rules(self.ROUTES)

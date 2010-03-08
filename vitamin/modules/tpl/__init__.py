@@ -1,14 +1,14 @@
-from vitamin.config import Tweak, Parameter
+from vitamin.config import tweak, Parameter
 from vitamin.modules.tpl.mutagen import Mutagen
 
 
-class Templates(Tweak("Templates")):
+class Templates():
     
-    def __init__(self, load_from=None):   
-             
+    def __init__(self, site_config=None):      
+        
         self.LOADER = Parameter()
-        self.tweak()
-        self.loader = self.LOADER(load_from)
+        tweak(self, "Templates", site_config)        
+        self.loader = self.LOADER(site_config)
         self.mutagen = Mutagen()  
     
     def load(self, name):            

@@ -1,22 +1,32 @@
 from helpers.lazyimport import smartimport
 from helpers.dictmapper import MappedDict
 from collections import UserList
+import os
+from types import ModuleType
 
 class Null:
     pass
 
 config = None
 LAZY_IMPORT_PREFIX = "lazy://"
+PATH_RESOLVER_PREFIX = "path://"
 
 def prepare(module):
     global config
     config = module
     
 def lazy_load_from_data(self, index, item):
-    if isinstance(item, str) and item.startswith(LAZY_IMPORT_PREFIX):
-        self.data[index] = smartimport(item[len(LAZY_IMPORT_PREFIX):])
+    
+    if isinstance(item, str):
+        if item.startswith(LAZY_IMPORT_PREFIX):
+            self.data[index] = smartimport(item[len(LAZY_IMPORT_PREFIX):])
+        elif item.startswith(PATH_RESOLVER_PREFIX):
+            module = smartimport(item[len(PATH_RESOLVER_PREFIX):])
+            assert "__file__" in dir(module), "По указанному пути не найден модуль"
+            self.data[index] = os.path.dirname(module.__file__)
         return self.data[index]
-    else: return item
+    else:
+        return item
 
 #===============================================================================
 # Exceptions
@@ -119,9 +129,12 @@ class Parameter():
     def __init__(self, default=Null(), section=None):
         self.name = None
         self.default = default
-        self.section = section     
+        self.section = section
+        
+def tweak(object, section, config=None):
+    __Tweak.tweak(object, section, config)
 
-class Tweak():
+class __Tweak():
     
     """
     Класс- конфигуратор. Классы, унаследованные от класса-
@@ -146,22 +159,25 @@ class Tweak():
     соответствуюшие значения, определенные под именами param* в указанных
     секциях конфигурационного модуля    
     """
-
-    def __init__(self, section):
-        
-        self.__params = []
-        self.__section = section
-       
-    def load_section(self, config_module, section):
+    
+    @classmethod
+    def load_section(cls, config_module, section):
         
         """Загрузка словаря- секции Section из модуля конфигурации"""
-              
-        if section in dir(config_module):     
-            section_dict = getattr(config_module, section);
-            assert isinstance(section_dict, Section)
-            return section_dict
         
-    def combine_sections(self, section):
+        if isinstance(config_module, ModuleType):
+            if section in dir(config_module):     
+                section_dict = getattr(config_module, section);
+                assert isinstance(section_dict, Section)
+                return section_dict
+        elif isinstance(config_module, dict):
+            if section in config_module:
+                section_dict = config_module[section]
+                assert isinstance(section_dict, Section)
+                return section_dict
+    
+    @classmethod
+    def combine_sections(cls, site_config, section):
         
         """
         Комбинирование параметров из нескольких секций в одну секцию.
@@ -173,8 +189,8 @@ class Tweak():
         
         assert section 
         
-        default_section_dict = self.load_section(config, section)
-        site_section_dict = self.load_section(self.site_config, section)
+        default_section_dict = cls.load_section(config, section)
+        site_section_dict = cls.load_section(site_config, section)
         
         section = None
         
@@ -190,12 +206,12 @@ class Tweak():
             #секция существует только в стандартной конфигурации
             section = default_section_dict
         else:
-            raise ConfigNoSection(self.__section)
+            raise ConfigNoSection(section)
         
         return section
         
-        
-    def tweak(self, site_config=None):
+    @classmethod
+    def tweak(cls, object, section, site_config=None):
         
         """
         Непосредственно осуществление конфигурирования полей Parameter
@@ -203,33 +219,24 @@ class Tweak():
         конфигурации фреймворка и из конфигурации сайта, причем приоритет
         отдается последней.
         """
+       
+        section = cls.combine_sections(site_config, section)
         
-        self.dir_default_config = (x for x in dir(config) if not x.startswith("_"))
-        self.dir_site_config = (x for x in dir(site_config) if not x.startswith("_")) 
-        self.site_config = site_config
-        
-        section = self.combine_sections(self.__section)
-        
-        params = {name:value for name, value in self.__dict__.items() 
+        params = {name:value for name, value in object.__dict__.items() 
             if isinstance(value, Parameter)}
-        
+       
         for name, param in params.items():
             param.name = name
             current_section = section          
             if param.section:      
-                current_section = self.combine_sections(param.section)
+                current_section = cls.combine_sections(site_config, param.section)
             if param.name in current_section:
-                setattr(self, param.name, current_section[param.name])
+                setattr(object, param.name, current_section[param.name])
             else:
                 if isinstance(param.default, Null):
                     raise ConfigNoParameter(current_section, param.name)
                 else:
-                    setattr(self, param.name, param.default)
-        
-        #чистим за собой класс
-        del self.dir_default_config
-        del self.site_config
-        del self.dir_site_config
+                    setattr(object, param.name, param.default)
         
 
 

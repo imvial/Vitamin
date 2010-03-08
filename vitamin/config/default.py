@@ -34,6 +34,5 @@ Templates = Section({
     "LOADER" : "lazy://vitamin.modules.tpl.loaders.file::FileLoader",
     "TEMPLATE_FOLDER" : ".",
     "TEMPLATE_EXTENSION" : ".html",
-    "TEMPLATE_TESTS_PACKAGE" : "lazy://vitamin.modules.tpl.tests.templates"
 })
 

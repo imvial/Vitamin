@@ -2,7 +2,7 @@ from iscript import IScript
 import sys
 import shutil
 import os
-from vitamin.siteinfo import create_info, write_to
+from vitamin.siteinfo import SiteInfo
 from vitamin.config import default
 
 class init(IScript):
@@ -14,6 +14,7 @@ class init(IScript):
         "models",
         "templates",
         "views",
+        "logic",
         "stuff/scripts",
         "stuff/styles",
         "stuff/files"]
@@ -26,13 +27,14 @@ class init(IScript):
         """
         
         list(map(os.makedirs, self.simple_site)) 
-        name = input("Enter site name:")
-        description = input("Enter site description:")
-        version = input("Enter site version:")
-        authors = input("Enter site authors:")
-        vitamin_version = input("Enter site vitamin version:")
-        text = create_info(name, description, version, authors, vitamin_version)
-        write_to(text, self.currentdir)
+        
+        info = SiteInfo(
+            name=input("Enter site name:"),
+            description=input("Enter site description:"),
+            version=input("Enter site version:"),
+            authors=input("Enter site authors:"))
+
+        info.write_to(self.currentdir)
         self.copy_config()
         
     def copy_config(self):

@@ -1,5 +1,6 @@
 import inspect
 import os
+from collections import namedtuple
 
 class SiteInfo():
     
@@ -10,12 +11,13 @@ class SiteInfo():
     в файл __info__.py и не модифицируется пользователем
     или разработчиками сайта.
     """
+    
+    def __init__(self, name="", description="", version="", authors=""):
 
-    __name = {0}
-    __description = {1}
-    __version = {2}
-    __authors = {3}
-    __vitamin_version = {4}
+        self.__name = name
+        self.__description = description
+        self.__version = version
+        self.__authors = authors
 
     @property
     def name(self):
@@ -33,38 +35,36 @@ class SiteInfo():
     def authors(self):
         return self.__authors
     
-    @property
-    def vitamin(self):
-        return self.__vitamin_version
+    def write_to(self, path):
+        
+        """
+        Записывает исходный текст класса SiteInfo (text) в файл __info__.py,
+        расположенный по указанному пути (path)
+        """
+        
+        if os.path.exists(path):
+            respath = os.path.join(path, "__info__.py")
+            with open(respath, "wt") as f:
+                for name, value in dict(
+                    (("name", self.name),
+                    ("description", self.description),
+                    ("version", self.version),
+                    ("authors", self.authors))).items():
+                    
+                    f.write("{0} = \"\"\"{1}\"\"\"\n".format(name, value))
+        else:
+            raise IOError("path not exists")
     
-def create_info(name, description, version, authors, vitamin_version):
-    
-    """
-    Создает исходный текст класса SiteInfo с заполненной информацией о
-    сайте для последующей записи в файл __info__.py
-    """
-    
-    text = inspect.getsource(SiteInfo)
-    return text.format(*(map(lambda x: "\"\"\"" + x + "\"\"\"",
-        (name, description, version, authors, vitamin_version))))
-
-def write_to(text, path):
-    
-    """
-    Записывает исходный текст класса SiteInfo (text) в файл __info__.py,
-    расположенный по указанному пути (path)
-    """
-    
-    if os.path.exists(path):
-        respath = os.path.join(path, "__info__.py")
-        with open(respath, "wt") as f:
-            f.write(text)
-    else:
-        raise IOError("path not exists")
-    
-def read_info():
-    
-    """
-    Импортирует модуль __info__ из текущей области видимости
-    и возвращает объект SiteInfo
-    """
+    def read_info(self, module):
+        
+        """
+        Импортирует модуль __info__ из текущей области видимости
+        и возвращает объект SiteInfo
+        """
+        try:
+            self.__name = getattr(module, "name")
+            self.__description = getattr(module, "description")
+            self.__version = getattr(module, "version")
+            self.__authors = getattr(module, "authors")
+        except:
+            raise Exception("Wrong info file")
