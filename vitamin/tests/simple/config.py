@@ -5,8 +5,15 @@ Templates = Section(
 )
 
 Site = Section(
+               
+    VIEWS=Section({
+        "index" : "lazy://simple.views.index::IndexView",
+    }),
+               
     ROUTES=Section({
-        "/" : "lazy://simple.views.index::IndexView"
+        "/" : "index",
+        "/info" : "index.info",
+        "/wsgi" : "index.wsgi"
     })
 )
 

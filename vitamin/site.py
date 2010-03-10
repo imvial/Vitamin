@@ -36,6 +36,10 @@ class Site():
     def Config(self):
         return self.__config
     
+    @property
+    def Info(self):
+        return self.__info
+    
     #===========================================================================
     # Загрузчики
     #===========================================================================
@@ -53,7 +57,7 @@ class Site():
         pass
     
     def loadViews(self):
-        self.__views = ViewSystem(self.Config)
+        self.__views = ViewSystem(self.Config, site=self)
     
     def loadModels(self, path):
         pass
@@ -65,5 +69,6 @@ class Site():
         self.__logic = None
         self.__templates = None
         self.__config = None
+        self.__info = None
     
     

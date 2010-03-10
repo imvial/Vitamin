@@ -1,3 +1,4 @@
+from functools import partial
     
 class Rule():
     
@@ -6,17 +7,35 @@ class Rule():
     URL, в виде ключей, и пользовательские функции обработки
     в виде значений.    
     """
+        
+    __slots__ = ["pretty", "regexp", "method", "__object"]
+                
+    @property
+    def Object(self):
+        return self.__object
     
-    __slots__ = ["regexp", "block"]
-    
-    def __init__(self, block, regexp):
-        self.block = block
+    def __init__(self, pretty, regexp):
+        
+        self.pretty = pretty
         self.regexp = regexp
-
+        self.method = None
+        self.__object = None
+        
+    def setMethod(self, method_name):
+        self.method = method_name    
+        
+    def setObject(self, object_inst):
+        self.__object = object_inst
+        
     def check(self, url):
-        matchobj = self.regexp.match(url)        
+        matchobj = self.regexp.match(url)
+        print("Проверяется путь правилом", self.regexp)      
         if matchobj:        
-            _arguments = matchobj.groupdict()      
-            return (True, _arguments)
+            _arguments = matchobj.groupdict()
+            try:
+                return partial(getattr(self.__object, self.method), * _arguments)
+            except AttributeError as err:
+                raise err
+                
         else:
-            return (False, None)
+            return None

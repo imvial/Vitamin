@@ -18,7 +18,7 @@ Loader = Section({
 URL = Section({
     "ROUTES":
     {"/" : "index",
-     "/user_{name}/{action[show|hide]}" : "user"}
+     "/user_{name}/{action[show|hide]}" : ("user", "foo")}
 })
 
 Database = Section({

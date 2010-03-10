@@ -68,3 +68,5 @@ class SiteInfo():
             self.__authors = getattr(module, "authors")
         except:
             raise Exception("Wrong info file")
+        
+        return self

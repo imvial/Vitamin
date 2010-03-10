@@ -1,10 +1,11 @@
+from vitamin.bindings.wsgi import HttpRequest
 import os
 from vitamin.site import Site
 import sys
 from helpers import lazyimport
 from vitamin.siteinfo import SiteInfo
 
-class SitesManager():
+class SiteManager():
     
     """
     Инструмент для управления сайтами Vitamin, необходим для
@@ -14,11 +15,18 @@ class SitesManager():
     """
     
     @property
-    def Sites(self):
-        return self.__sites
+    def Site(self):
+        return self.__site
     
     def __init__(self):
-        self.__sites = {}
+        self.__site = {}
+        
+    def __call__(self, env, send_response):
+        
+        req = HttpRequest(env, send_response)
+        self.Site.Views.request(req)
+        return req.send()
+        
     
     def loadSite(self, path):
         
@@ -54,6 +62,8 @@ class SitesManager():
             site.loadTemplates()
         if views_part in parts:
             site.loadViews()
+            
+        self.__site = site
 
     
     def unloadSite(self, name):

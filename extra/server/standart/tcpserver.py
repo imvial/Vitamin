@@ -52,3 +52,5 @@ class SimpleHttpServer(IServer):
     
     def getRedirect(self):
         return self.foreign
+    
+import wsgiref.simple_server
