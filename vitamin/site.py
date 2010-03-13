@@ -1,6 +1,7 @@
 from vitamin.modules.tpl import Templates
 from vitamin.siteinfo import SiteInfo
 from vitamin.views import ViewSystem
+from vitamin.modules.static import StorageSystem
 
 class Site():
     
@@ -40,27 +41,34 @@ class Site():
     def Info(self):
         return self.__info
     
+    @property
+    def Storage(self):
+        return self.__storage
+    
     #===========================================================================
     # Загрузчики
     #===========================================================================
     
-    def setConfig(self, config):
+    def set_config(self, config):
         self.__config = config
     
-    def setInfo(self, info):
+    def set_info(self, info):
         self.__info = SiteInfo().read_info(info)
     
-    def loadTemplates(self):
+    def load_templates(self):
         self.__templates = Templates(self.Config)
     
-    def loadLogic(self, path):
+    def load_logic(self, path):
         pass
     
-    def loadViews(self):
+    def load_views(self):
         self.__views = ViewSystem(self.Config, site=self)
     
-    def loadModels(self, path):
+    def load_models(self, path):
         pass
+    
+    def load_storage(self):
+        self.__storage = StorageSystem(self.Config)
 
     def __init__(self):
         
@@ -70,5 +78,6 @@ class Site():
         self.__templates = None
         self.__config = None
         self.__info = None
+        self.__storage = None
     
     

@@ -55,13 +55,15 @@ class SiteManager():
         
         print("Parts loaded: ", ", ".join(parts.keys()))
         
-        site.setConfig(parts[config_part])
-        site.setInfo(parts[info_part])
+        site.set_config(parts[config_part])
+        site.set_info(parts[info_part])
         
         if templates_part in parts:
-            site.loadTemplates()
+            site.load_templates()
         if views_part in parts:
-            site.loadViews()
+            site.load_views()
+            
+        site.load_storage()
             
         self.__site = site
 
