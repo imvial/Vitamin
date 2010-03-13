@@ -28,7 +28,7 @@ class SiteManager():
         return req.send()
         
     
-    def loadSite(self, path):
+    def load_site(self, path):
         
         assert os.path.exists(path)
         
@@ -66,10 +66,10 @@ class SiteManager():
         self.__site = site
 
     
-    def unloadSite(self, name):
+    def unload_site(self, name):
         pass
     
-    def reloadSite(self, name):
+    def reload_site(self, name):
         pass
     
 

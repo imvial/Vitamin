@@ -12,7 +12,7 @@ class server(IScript):
         print("Starting server in", path)
         
         sm = SiteManager()
-        sm.loadSite(path)
+        sm.load_site(path)
         
         server = make_server("127.0.0.1", 8080, sm)
         server.serve_forever()

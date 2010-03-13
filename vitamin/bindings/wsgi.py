@@ -139,6 +139,6 @@ class HttpRequest():
         
     def send(self):
         self.start_response(self.code, self.headers)
-        return self.answer
+        return [bytes("".join(self.answer).encode("utf-8"))]
     
 
