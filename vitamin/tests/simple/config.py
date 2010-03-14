@@ -10,9 +10,14 @@ Site = Section(
         "scripts": "path://simple.stuff.scripts"
     }),
     
-    FOLDER_EXTENSIONS=Section({
+    FOLDER_EXTENSIONS={
         "styles": [".css"],
         "scripts": [".js"]
+    },
+    
+    DEFAULT_CONVERSIONS=Section({
+        "styles": "lazy://vitamin.modules.tpl.builtins.methods::css_style",
+        "scripts": "lazy://vitamin.modules.tpl.builtins.methods::jscript"
     }),
     
     VIEWS=Section({
