@@ -34,18 +34,29 @@ class TemplateInfo():
   
 class Template():
 
-    def __init__(self, text="", name="default.template.name"):
+    def __init__(self, text="", name="default.template.name", default_context=None):
         
         self.name = name
         self.chunks = []
         self.text = text
+        self.default_context = default_context
         if text: 
             self.chunks = _analyse(text)           
 
+    def set_default_context(self, context):
+        self.default_context = context
+        return self
+
     def render(self, context=None):
         
+        ctx = None
+        if self.default_context:
+            ctx = self.default_context.copy()
+            if context: 
+                ctx.update(context)
+        
         aggr = Aggregator()
-        [x.render(context, aggr) for x in self.chunks]
+        [x.render(ctx or context, aggr) for x in self.chunks]
         return aggr.join()
     
     def info(self):

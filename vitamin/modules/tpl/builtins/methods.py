@@ -14,4 +14,10 @@ def lower(arg):
 def format(string, arg):
     return string.format(arg)
 
+def css_style(style_file):
+    return """<link href="{0}" rel="stylesheet" type="text/css"/>""".format(style_file)
+
+def jscript(script_file):
+    return """<script src="{0}" type="text/javascript">//</script>""".format(script_file)
+
 nulline = "\n"

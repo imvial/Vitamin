@@ -55,7 +55,7 @@ class SiteInfo():
         else:
             raise IOError("path not exists")
     
-    def read_info(self, module):
+    def read_module(self, module):
         
         """
         Импортирует модуль __info__ из текущей области видимости

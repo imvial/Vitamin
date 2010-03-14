@@ -16,10 +16,10 @@ class TestSystem(TestCase):
         self.system = Templates(config)
         
     def test_init(self):        
-        template = self.system.load("test1")
+        template = self.system("test1")
         print(template.info())
         
     def test_extend(self):
-        template = self.system.load("test_extend_child")
+        template = self.system("test_extend_child")
         print(template.render())
         

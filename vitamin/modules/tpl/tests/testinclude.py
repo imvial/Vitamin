@@ -1,32 +1,46 @@
 from unittest import TestCase
 from vitamin.modules.tpl import Templates, context
-from vitamin.config import Tweak, Parameter
 from vitamin.modules.tpl.exceptions import LoopException
+
+from vitamin.config import Section
 
 import os
 def LowerUpper(string):
     return string.title()
 
-class IncludeTest(TestCase, Tweak("Templates")):
-    def setUp(self):        
-        self.test_folder = os.path.dirname('./templates/include/')
-        self.tweak()
-        self.system = Templates(self.test_folder)
-        self.template1 = self.system.load("includ")
-        self.template2 = self.system.load("test_include1")
-        self.template3 = self.system.load("includ1")
+class IncludeTest(TestCase):
+    
+    def __init__(self, *args, **kwargs):
         
-    def test_notInclude(self):        
-        assert self.template1.render()=="it is includ"
-    def test_simpleInclude(self):        
-        assert len(self.template2.render())==13
+        TestCase.__init__(self, *args, **kwargs)   
+             
+        config = dict(
+            Templates=Section(
+                TEMPLATE_FOLDER="path://vitamin.modules.tpl.tests.templates.include"
+            ))
+        
+        self.system = Templates(config)
+        
+        self.template1 = self.system("include")
+        self.template2 = self.system("test_include_one")
+        self.template3 = self.system("include_two")
+        
+    def test_notInclude(self):
+       
+        self.assertEqual(self.template1.render(), "it is include")
+        
+    def test_simpleInclude(self):
+                
+        self.assertEqual(len(self.template2.render()), 14)
+        
     def test_insideInclude(self):
-        names=[1,2,3]
-        assert  len(self.template3.render(context.Context(names=names)))==98
+        
+        names = [1, 2, 3]
+        self.assertEqual(len(self.template3.render(context.Context(names=names))), 101)
+        
     def test_loopInclude(self):
-        try:
-            template=self.system.load("loopincludeStart")
-        except Exception as err:
-            print (err)
+        
+        self.assertRaises(Exception, self.system, "cycle_include_start")
+
             
             

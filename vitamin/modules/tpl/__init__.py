@@ -1,5 +1,6 @@
 from vitamin.config import tweak, Parameter
 from vitamin.modules.tpl.mutagen import Mutagen
+from vitamin.modules.tpl.context import Context
 
 class Templates():
     
@@ -8,7 +9,16 @@ class Templates():
         self.LOADER = Parameter()
         tweak(self, "Templates", site_config)        
         self.loader = self.LOADER(site_config)
-        self.mutagen = Mutagen()  
+        self.mutagen = Mutagen()
+        
+        self.__default_context = None
+        
+    def set_default_context(self, context):
+        
+        if isinstance(context, Context):
+            self.__default_context = context
+        elif isinstance(context, dict):
+            self.__default_context = Context(context)
     
     def __call__(self, name):
         
@@ -21,4 +31,4 @@ class Templates():
                
         return self.mutagen.mutate(
             loader=self.loader,
-            template=self.loader.load(name))
+            template=self.loader.load(name)).set_default_context(self.__default_context)

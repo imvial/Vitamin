@@ -4,6 +4,7 @@ from vitamin.site import Site
 import sys
 from helpers import lazyimport
 from vitamin.siteinfo import SiteInfo
+from time import sleep
 
 class SiteManager():
     
@@ -25,8 +26,7 @@ class SiteManager():
         
         req = HttpRequest(env, send_response)
         self.Site.Views.request(req)
-        return req.send()
-        
+        return req.send()        
     
     def load_site(self, path):
         
@@ -41,25 +41,26 @@ class SiteManager():
         site = Site()
         site_path, site_name = os.path.split(path)
             
-        print("\nLoading site '{0}' from: \n    {1} ".format(site_name, site_path))        
+        print("\nLoading site '{0}' from: \n    {1} ".format(site_name, site_path))
+               
         sys.path.append(site_path)        
         module = lazyimport.loadmodule(site_name)
        
-        parts = {x:getattr(module, x) for x in dir(module) if not x.startswith("_")}
-        if not config_part in parts:
-            raise Exception("No config")
-        if not info_part in parts:           
-            raise Exception("No info")
-        if not logic_part in parts:
-            raise Exception("No logic")
+        parts = {x:getattr(module, x) for x in dir(module) 
+            if not x.startswith("_")}
+        
+        assert config_part in parts        
+        assert info_part in parts               
+        assert logic_part in parts
         
         print("Parts loaded: ", ", ".join(parts.keys()))
         
-        site.set_config(parts[config_part])
-        site.set_info(parts[info_part])
+        site.load_config(parts[config_part])
+        site.load_info(parts[info_part])
         
         if templates_part in parts:
             site.load_templates()
+            
         if views_part in parts:
             site.load_views()
             

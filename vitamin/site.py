@@ -49,14 +49,21 @@ class Site():
     # Загрузчики
     #===========================================================================
     
-    def set_config(self, config):
+    def load_config(self, config):
         self.__config = config
     
-    def set_info(self, info):
-        self.__info = SiteInfo().read_info(info)
+    def load_info(self, info):
+        self.__info = SiteInfo().read_module(info)
     
     def load_templates(self):
         self.__templates = Templates(self.Config)
+        
+        context = dict(
+            storage=self.__storage,
+            info=self.__info
+        )
+            
+        self.__templates.set_default_context(context)
     
     def load_logic(self, path):
         pass
@@ -79,5 +86,6 @@ class Site():
         self.__config = None
         self.__info = None
         self.__storage = None
+        
     
     
