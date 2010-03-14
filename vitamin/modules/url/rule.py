@@ -1,4 +1,7 @@
 from functools import partial
+
+import logging
+logger = logging.getLogger("url")
     
 class Rule():
     
@@ -29,7 +32,7 @@ class Rule():
         
     def check(self, url):
         matchobj = self.regexp.match(url)
-        print("Проверяется путь правилом", self.regexp)      
+        logger.debug("rule checking '%s'...", self.regexp)      
         if matchobj:        
             _arguments = matchobj.groupdict()
             try:

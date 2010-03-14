@@ -1,6 +1,9 @@
 import os
 from vitamin.config import Parameter, tweak, Section
 
+import logging
+logger = logging.getLogger("storage")
+
 class Storage():
     
     name = ""
@@ -30,14 +33,14 @@ class Storage():
         if conversion:
             self.html_conversion = conversion
         
-        print("storage: '{0}' conversion -> ".format(self.name), self.html_conversion("test"))
+        logger.debug("'%s' conversion %s ", self.name, self.html_conversion("test"))
         
         if path and os.path.exists(path):
             
             self.files = {os.path.splitext(x)[0]:os.path.join(path, x) for x in os.listdir(path)
                           if os.path.splitext(x)[1] in extensions}         
             
-            print("storage: files in '{0}' storage -> ".format(self.name),
+            logger.info("files in '%s': %s", self.name ,
                 ", ".join([os.path.split(x)[1] for x in self.files]))
             
     def __getattribute__(self, name):
@@ -63,9 +66,7 @@ class StorageSystem(object):
         assert isinstance(self.FOLDERS, Section)
         assert isinstance(self.FOLDER_EXTENSIONS, (dict, Section))
         
-        self.FOLDERS.preload()
-        
-        
+        self.FOLDERS.preload()       
 
         for name, path in self.FOLDERS.items():
             if name in self.FOLDER_EXTENSIONS:
@@ -80,7 +81,6 @@ class StorageSystem(object):
         
         storages = default(self, "storages")
         if name in storages:
-            print(">>>>>>>>name", name)
             return storages[name]
         else:
             return default(self, name)

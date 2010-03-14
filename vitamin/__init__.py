@@ -6,6 +6,11 @@ from helpers import lazyimport
 from vitamin.siteinfo import SiteInfo
 from time import sleep
 
+import logging
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logger = logging.getLogger("sitemanage")
+
 class SiteManager():
     
     """
@@ -41,7 +46,7 @@ class SiteManager():
         site = Site()
         site_path, site_name = os.path.split(path)
             
-        print("\nLoading site '{0}' from: \n    {1} ".format(site_name, site_path))
+        logger.info("loading site '%s' from: %s ", site_name, site_path)
                
         sys.path.append(site_path)        
         module = lazyimport.loadmodule(site_name)
@@ -53,7 +58,7 @@ class SiteManager():
         assert info_part in parts               
         assert logic_part in parts
         
-        print("Parts loaded: ", ", ".join(parts.keys()))
+        logger.info("parts loaded: " + ", ".join(parts.keys()))
         
         site.load_config(parts[config_part])
         site.load_info(parts[info_part])

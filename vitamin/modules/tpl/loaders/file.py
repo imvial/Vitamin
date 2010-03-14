@@ -9,6 +9,9 @@ from vitamin.modules.tpl.template import Template
 
 #This file is part of Vitamin Project
 
+import logging
+logger = logging.getLogger("tpl.loaders.file")
+
 class FileLoader(ITemplateLoader):
     """Класс- загрузчик шаблонов из файлов"""
 
@@ -17,7 +20,7 @@ class FileLoader(ITemplateLoader):
         self.TEMPLATE_EXTENSION = Parameter()
         tweak(self, "Templates", config)
         
-        print("file.py: loader configured to use folder -> ",
+        logger.debug("loader configured to use folder '%s'" ,
             self.TEMPLATE_FOLDER)
         
         self.index = [x for x in os.listdir(self.TEMPLATE_FOLDER) 
