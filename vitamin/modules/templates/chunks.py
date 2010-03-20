@@ -1,4 +1,4 @@
-from vitamin.modules.tpl.context import ContextFunction
+from vitamin.modules.templates.context import ContextFunction
 from http.cookiejar import logger
 import logging
 

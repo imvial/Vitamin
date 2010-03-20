@@ -1,8 +1,8 @@
-from vitamin.modules.tpl import Templates
+from vitamin.modules.templates import Templates
 from vitamin.siteinfo import SiteInfo
 from vitamin.views import ViewSystem
 from vitamin.modules.static import StorageSystem
-from vitamin.modules.tpl.context import Context
+from vitamin.modules.templates.context import Context
 
 class Site():
     

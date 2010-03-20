@@ -1,5 +1,5 @@
-from vitamin.modules.tpl.lexical import TemplateAnalyzer
-from vitamin.modules.tpl.context import Context, Aggregator
+from vitamin.modules.templates.lexical import TemplateAnalyzer
+from vitamin.modules.templates.context import Context, Aggregator
 import logging
 
 #$Rev: 122 $     

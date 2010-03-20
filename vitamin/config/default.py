@@ -31,7 +31,7 @@ Database = Section({
 })
 
 Templates = Section({
-    "LOADER" : "lazy://vitamin.modules.tpl.loaders.file::FileLoader",
+    "LOADER" : "lazy://vitamin.modules.templates.loaders.file::FileLoader",
     "TEMPLATE_FOLDER" : ".",
     "TEMPLATE_EXTENSION" : ".html",
 })

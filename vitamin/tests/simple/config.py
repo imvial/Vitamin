@@ -16,8 +16,8 @@ Site = Section(
     },
     
     DEFAULT_CONVERSIONS=Section({
-        "styles": "lazy://vitamin.modules.tpl.builtins.methods::css_style",
-        "scripts": "lazy://vitamin.modules.tpl.builtins.methods::jscript"
+        "styles": "lazy://vitamin.modules.templates.builtins.methods::css_style",
+        "scripts": "lazy://vitamin.modules.templates.builtins.methods::jscript"
     }),
     
     VIEWS=Section({

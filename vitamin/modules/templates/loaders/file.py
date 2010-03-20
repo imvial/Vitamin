@@ -1,7 +1,7 @@
-from vitamin.modules.tpl.loader import ITemplateLoader
+from vitamin.modules.templates.loader import ITemplateLoader
 from vitamin.config import tweak, Parameter
 import os
-from vitamin.modules.tpl.template import Template
+from vitamin.modules.templates.template import Template
 
 #$Rev: 122 $     
 #$Author: fnight $  

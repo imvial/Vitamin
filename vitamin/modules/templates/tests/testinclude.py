@@ -1,6 +1,6 @@
 from unittest import TestCase
-from vitamin.modules.tpl import Templates, context
-from vitamin.modules.tpl.exceptions import LoopException
+from vitamin.modules.templates import Templates, context
+from vitamin.modules.templates.exceptions import LoopException
 
 from vitamin.config import Section
 
@@ -16,7 +16,7 @@ class IncludeTest(TestCase):
              
         config = dict(
             Templates=Section(
-                TEMPLATE_FOLDER="path://vitamin.modules.tpl.tests.templates.include"
+                TEMPLATE_FOLDER="path://vitamin.modules.templates.tests.templates.include"
             ))
         
         self.system = Templates(config)

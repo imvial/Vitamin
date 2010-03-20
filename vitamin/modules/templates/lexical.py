@@ -1,8 +1,8 @@
 from helpers.vitaparse.lexical import BlockSpec, Spec, BlockTokenizer
 from helpers.vitaparse import exact, ntype, future, skip, maby, many, finish, \
     Ignore
-from vitamin.modules.tpl.chunks import ChainChunk, QualChunk, LoopChunk, BlockChunk, TextChunk, ModChunk, ExtendChunk, IncludeChunk
-from vitamin.modules.tpl.context import ContextVar, ContextFunction
+from vitamin.modules.templates.chunks import ChainChunk, QualChunk, LoopChunk, BlockChunk, TextChunk, ModChunk, ExtendChunk, IncludeChunk
+from vitamin.modules.templates.context import ContextVar, ContextFunction
 from functools import partial
 
 #$Rev: 122 $     
@@ -233,7 +233,7 @@ class TemplateAnalyzer():
         stuff.define(many(
             text | short_block | ifchunk | 
             forchunk | block_chunk | mod_chunk | 
-            comment | extend|include))           
+            comment | extend | include))           
         
         return [x for x in (stuff + finish()).parse(tokens)[0] if not isinstance(x, Ignore)]
     

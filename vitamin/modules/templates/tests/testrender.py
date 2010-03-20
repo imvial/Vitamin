@@ -1,7 +1,7 @@
 from unittest import TestCase
-from vitamin.modules.tpl.lexical import TemplateAnalyzer
-from vitamin.modules.tpl.template import Template
-from vitamin.modules.tpl.context import Context
+from vitamin.modules.templates.lexical import TemplateAnalyzer
+from vitamin.modules.templates.template import Template
+from vitamin.modules.templates.context import Context
 
     
 class RenderTest(TestCase):

@@ -1,6 +1,6 @@
 from vitamin.config import tweak, Parameter
-from vitamin.modules.tpl.mutagen import Mutagen
-from vitamin.modules.tpl.context import Context
+from vitamin.modules.templates.mutagen import Mutagen
+from vitamin.modules.templates.context import Context
 
 class Templates():
     

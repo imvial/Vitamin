@@ -5,7 +5,7 @@
 
 #This file is part of Vitamin Project
 
-from vitamin.modules.tpl.builtins import methods, modificators
+from vitamin.modules.templates.builtins import methods, modificators
 import logging
 import operator
 from functools import partial
