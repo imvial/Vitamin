@@ -48,8 +48,9 @@ class Template():
 
     def set_default_context(self, context):
         
-        assert isinstance(context, Context)
-        self.default_context = context
+        if context:
+            assert isinstance(context, Context)
+            self.default_context = context
         return self
 
     def render(self, context=None):
