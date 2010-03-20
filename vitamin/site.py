@@ -2,6 +2,7 @@ from vitamin.modules.tpl import Templates
 from vitamin.siteinfo import SiteInfo
 from vitamin.views import ViewSystem
 from vitamin.modules.static import StorageSystem
+from vitamin.modules.tpl.context import Context
 
 class Site():
     
@@ -58,10 +59,9 @@ class Site():
     def load_templates(self):
         self.__templates = Templates(self.Config)
         
-        context = dict(
+        context = Context(
             storage=self.__storage,
-            info=self.__info
-        )
+            info=self.__info)
             
         self.__templates.set_default_context(context)
     

@@ -1,4 +1,6 @@
 from vitamin.modules.tpl.context import ContextFunction
+from http.cookiejar import logger
+import logging
 
 #$Rev: 122 $     
 #$Author: fnight $  
@@ -16,6 +18,7 @@ render. Как правило, отрисовывая себя, токен от�
 Объект Context описан в соответствующем модуле."""
 
 from functools import partial
+logger = logging.getLogger("templates.chunks")
 
 class Chunk:
     """Основной класс для всех токенов. Определяет
@@ -71,7 +74,8 @@ class TextChunk(Chunk):
         только к определенному типу токенов. В данном случае
         к объекту Context идет запрос на обработку текста
         модификаторами, применимыми к TextChunk
-        """       
+        """
+        logger.debug(self.value)
         aggregator.append(self.value)
         
 class ValueChunk(Chunk):
@@ -89,7 +93,11 @@ class ValueChunk(Chunk):
         self.value = value
         
     def render(self, context):    
-        return str(context.get(self.value))
+        
+        logger.debug("value: context %s typeof %s", context, type(context))
+        value = str(context.get(self.value))
+        logger.debug("value: name '%s'; value '%s'", self.value, value)
+        return value
             
     def __repr__(self):
         return """<ValueChunk value={0} converted={1}>""".format(self.value,
@@ -101,11 +109,15 @@ class FunctionChunk(Chunk):
         Chunk.__init__(self)
         self.function = function
         
-    def render(self, context, arg=None):  
+    def render(self, context, arg=None):       
+
         part = context.get(self.function)
         if arg:
             part = partial(part.func, *((arg,) + part.args))
-        return part()
+        
+        result = part()
+        logger.debug("function: name %s args %s result %s", self.function, [arg, part.args], result)
+        return result
             
     def __repr__(self):
         return """<FunctionChunk>"""
@@ -150,7 +162,10 @@ class ChainChunk(Chunk):
         модификаторы"""
         result = self.value.render(context)
         for function in self.children:
-            result = function.render(context, result)      
+            result = function.render(context, result)
+    
+        logger.debug("chain: result %s", str(result))
+
         aggregator.append(str(result))
 
 class LoopChunk(Chunk):

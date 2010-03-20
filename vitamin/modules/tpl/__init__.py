@@ -15,11 +15,9 @@ class Templates():
         
     def set_default_context(self, context):
         
-        if isinstance(context, Context):
-            self.__default_context = context
-        elif isinstance(context, dict):
-            self.__default_context = Context(context)
-    
+        assert isinstance(context, Context)
+        self.__default_context = context
+
     def __call__(self, name):
         
         """

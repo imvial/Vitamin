@@ -6,12 +6,15 @@
 #This file is part of Vitamin Project
 
 from vitamin.modules.tpl.builtins import methods, modificators
+import logging
 import operator
 from functools import partial
 from collections import OrderedDict
 
 builtin_methods = {x:getattr(methods, x) for x in dir(methods) if not x.startswith("_")}
 builtin_modificators = {x:getattr(modificators, x) for x in dir(modificators) if not x.startswith("_")}
+
+logger = logging.getLogger("templates")
 
 #переменаая, зависящая от контекста
 class ContextVar(str): 
@@ -45,14 +48,16 @@ class Context(dict):
     """
         
     def get(self, var):
-
+        
+        logger.debug("Context variable '%s' resolving", var)
+        
         if isinstance(var, ContextVar):   
             #разруливание переменных любой глубины var1.var2.var3... 
             if "." in var:
                 name, *path = var.split(".")
-                getter = operator.attrgetter(path)
+                getter = operator.attrgetter(".".join(path))
                 if name in self:
-                    getter(self[name])
+                    return getter(self[name])
                 else:
                     raise Exception("context var failure: " + repr(name))
             else:

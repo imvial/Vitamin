@@ -1,5 +1,6 @@
 from vitamin.modules.tpl.lexical import TemplateAnalyzer
 from vitamin.modules.tpl.context import Context, Aggregator
+import logging
 
 #$Rev: 122 $     
 #$Author: fnight $  
@@ -15,6 +16,8 @@ TEMPLATE_INFO_STRING = \
         root.chunks: {1};
         total.chunks: {2}; 
 """
+
+logger = logging.getLogger("template")
 
 class TemplateInfo():
     
@@ -44,6 +47,8 @@ class Template():
             self.chunks = _analyse(text)           
 
     def set_default_context(self, context):
+        
+        assert isinstance(context, Context)
         self.default_context = context
         return self
 
@@ -51,9 +56,11 @@ class Template():
         
         ctx = None
         if self.default_context:
-            ctx = self.default_context.copy()
+            ctx = Context(self.default_context.copy())
             if context: 
                 ctx.update(context)
+        
+        logger.debug("context: %s", ctx)
         
         aggr = Aggregator()
         [x.render(ctx or context, aggr) for x in self.chunks]

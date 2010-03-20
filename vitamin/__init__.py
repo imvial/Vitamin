@@ -63,13 +63,13 @@ class SiteManager():
         site.load_config(parts[config_part])
         site.load_info(parts[info_part])
         
+        site.load_storage()
+        
         if templates_part in parts:
             site.load_templates()
             
         if views_part in parts:
             site.load_views()
-            
-        site.load_storage()
             
         self.__site = site
 
