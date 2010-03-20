@@ -6,11 +6,50 @@ logger = logging.getLogger("storage")
 
 class Storage():
     
-    name = ""
-    files = ""
-    extensions = []
-    path = None    
+    """
+    Файловое хранилище. 
+    Данный класс отвечает за обработку файлов определенных
+    заранее расширений extensions, расположенных в папке path.
+    У каждое хранилище имеет имя, по кторому оно будет доступно
+    их шаблонной системы, и обработчик html_conversion, который
+    создает обвязку имени файла:
     
+        Пример:
+        
+        html_conversion('style.css') -> 
+            <link href="style.css" rel="stylesheet"/>
+   
+    Обращение к аттрибутам класса:
+    
+        Создан экземпляр класса Storage и менем styles,
+        содержащий файл style.css. При обращении styles.style
+        в хранилище производится поиск файла style и если он будет
+        обнаружен - вызывается html_conversion и возвращается
+        результат преобразования (см. выше)
+        
+        style.html.styles.css    |
+        style.html("styles.css") | -> 
+            <link href="/path/to/style/style.css" rel="stylesheet"/>
+            
+        Получение содержания файла:
+        
+            Получить содержание файла можно несколькими способами:
+            
+            1. Получение текста файла
+                style.text.styles.css    |
+                style.text("styles.css") | -> 'body{margin:0 auto;};'
+                
+            2. Получение потока
+                style.stream.styles.css    |
+                style.stream("styles.css") | -> bytes
+                
+            3. Регистрация альтернативных обработчиков
+                (для получения потока gzip, например)
+                    TODO
+                    
+    """
+    
+    #default
     html_conversion = lambda path: path
     
     def set_conversion(self, conversion):
