@@ -2,6 +2,9 @@ import os
 from vitamin.config import Parameter, tweak, Section
 
 import logging
+from inspect import getargs
+from vitamin.modules.static.conversions import Conversion, file_text, file_bin, \
+    path_returner
 logger = logging.getLogger("storage")
 
 class Storage():
@@ -27,7 +30,7 @@ class Storage():
         обнаружен - вызывается html_conversion и возвращается
         результат преобразования (см. выше)
         
-        style.html.styles.css    |
+        style.html.styles_css    |
         style.html("styles.css") | -> 
             <link href="/path/to/style/style.css" rel="stylesheet"/>
             
@@ -36,11 +39,11 @@ class Storage():
             Получить содержание файла можно несколькими способами:
             
             1. Получение текста файла
-                style.text.styles.css    |
+                style.text.styles_css    |
                 style.text("styles.css") | -> 'body{margin:0 auto;};'
                 
             2. Получение потока
-                style.stream.styles.css    |
+                style.stream.styles_css    |
                 style.stream("styles.css") | -> bytes
                 
             3. Регистрация альтернативных обработчиков
@@ -48,48 +51,78 @@ class Storage():
                     TODO
                     
     """
-    
-    #default
-    html_conversion = lambda path: path
-    
-    def set_conversion(self, conversion):
+       
+    def __add_conversion(self, name, conversion):
         
-        assert hasattr(conversion, "__call__")
-        self.html_conversion = conversion
-    
-    def __init__(self, name, path=None, extensions=[], conversion=None):
+        conv = conversion()
         
+        assert isinstance(conv, Conversion)
+        
+        conv.set_storage(self)
+        
+        setattr(self, name, conv)
+        self.conversions.append(name)
+        
+        logger.debug("'%s' conversion '%s' ", self._name, name)
+        
+    def __del_conversion(self, name):
+        
+        assert name in dir(self)
+        
+        obj = getattr(self, name)
+        assert isinstance(obj, Conversion)
+        
+        delattr(self, name)
+        del self.conversions[self.conversions.index(name)] 
+    
+    def __init__(self, st_name, path=None, extensions=[], conversions=None):
+        
+        self.conversions = []
         self.files = {}
+        self.default = None 
         
-        assert isinstance(name, str)
+        assert isinstance(st_name, str)
         assert isinstance(path, str)
         assert extensions
         
-        self.name = name
-        self.path = path
-        self.extensions = extensions
+        self._name = st_name
+        self._path = path
+        self._extensions = extensions
         
-        if conversion:
-            self.html_conversion = conversion
+        if conversions:
+            assert isinstance(conversions, Section)
+            conversions.preload()
+            
+            for name, conversion in conversions.items():
+                self.__add_conversion(name, conversion)
+
+        self.__add_conversion("text", file_text)
+        self.__add_conversion("stream", file_bin)
         
-        logger.debug("'%s' conversion %s ", self.name, self.html_conversion("test"))
-        
+        if not "default" in self.conversions:
+            logger.info(" %s's default conversion added automaticly", self._name)
+            self.__add_conversion("default", path_returner)
+
         if path and os.path.exists(path):
             
-            self.files = {os.path.splitext(x)[0]:os.path.join(path, x) for x in os.listdir(path)
-                          if os.path.splitext(x)[1] in extensions}         
+            self.files = {os.path.splitext(x)[0] + "_" 
+                + os.path.splitext(x)[1][1:]:os.path.join(path, x) 
+                for x in os.listdir(path) if os.path.splitext(x)[1] in extensions}         
             
-            logger.info("files in '%s': %s", self.name ,
+            logger.info("files in '%s': %s", self._name ,
                 ", ".join([os.path.split(x)[1] for x in self.files]))
             
     def __getattribute__(self, name):
         
-        default = object.__getattribute__
-        files = default(self, "files")
-        if name in files:
-            return self.html_conversion(files[name])
+        getter = object.__getattribute__
+        conversions = getter(self, "conversions")
+        files = getter(self, "files")
+        default = getter(self, "default")
+        if (not name in conversions) and (name in files):
+            return default.go(name, self.files[name])
         else:
-            return default(self, name)
+            return getter(self, name)
+        
     
 class StorageSystem(object):
        
@@ -110,7 +143,7 @@ class StorageSystem(object):
         for name, path in self.FOLDERS.items():
             if name in self.FOLDER_EXTENSIONS:
                 self.add_storage(Storage(name, path, self.FOLDER_EXTENSIONS[name],
-                    conversion=(self.DEFAULT_CONVERSIONS[name] if name in self.DEFAULT_CONVERSIONS else None)))
+                    conversions=(self.DEFAULT_CONVERSIONS[name] if name in self.DEFAULT_CONVERSIONS else None)))
             else:
                 raise Exception("Укажите расширения файлов для хранилища '{0}'".format(name))
             
@@ -120,6 +153,7 @@ class StorageSystem(object):
         
         storages = default(self, "storages")
         if name in storages:
+            logger.debug("'%s' storage requested", name)
             return storages[name]
         else:
             return default(self, name)
@@ -127,7 +161,7 @@ class StorageSystem(object):
     def add_storage(self, storage):
         
         assert storage
-        self.storages[storage.name] = storage
+        self.storages[storage._name] = storage
         
     def del_storage(self, storage=None, name=None):
         
