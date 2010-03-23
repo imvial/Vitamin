@@ -51,11 +51,25 @@ class Storage():
                     TODO
                     
     """
+    
+    #===============================================================================
+    # Добавление и удаление преобразователей файлов
+    #===============================================================================
        
     def __add_conversion(self, name, conversion):
         
-        conv = conversion()
+        """
+        Получает на вход два параметра 
+            @name - имя преобразователя
+            @conversion - класс преобразователя
+            
+        Процедура создает экземпляр преобразователя @conversion
+        и добавляет его к полям класса хранилища, для которого 
+        метод был вызван, под указанным именем @name и добавляет
+        @name в список зарегистрированных преобразователей.      
+        """
         
+        conv = conversion()        
         assert isinstance(conv, Conversion)
         
         conv.set_storage(self)
@@ -67,42 +81,74 @@ class Storage():
         
     def __del_conversion(self, name):
         
-        assert name in dir(self)
+        """
+        Получает на вход два параметра 
+            @name - имя преобразователя
+            
+        Процедура проверяет наличие @name в списке зарегистрированных
+        преобразователей и удаляет преобразователь при его наличии.
+        """
         
-        obj = getattr(self, name)
-        assert isinstance(obj, Conversion)
-        
+        assert name in self.conversions
+
         delattr(self, name)
-        del self.conversions[self.conversions.index(name)] 
+        del self.conversions[self.conversions.index(name)]
+        
+    #===========================================================================
+    # Инициализация хранилища
+    #===========================================================================
     
     def __init__(self, st_name, path=None, extensions=[], conversions=None):
         
-        self.conversions = []
-        self.files = {}
-        self.default = None 
+        """
+        @st_name - имя хранилища в системе (используется в основном
+        для вывода отладочных сообщений в лог)
         
+        @path - путь в файловой системе, по которому необходимо производить
+        поиск файлов хранилища
+        
+        @extensions - список расширений файлов, которые обрабатывает данное
+        хранилище в формате .xyz
+        
+        @conversions - словарь преобразователей в формате {name:conversion_class}
+        """
+                
         assert isinstance(st_name, str)
         assert isinstance(path, str)
         assert extensions
         
+        self.conversions = []
+        self.files = {}
+        self.default = None         
         self._name = st_name
         self._path = path
         self._extensions = extensions
         
-        if conversions:
-            assert isinstance(conversions, Section)
-            conversions.preload()
-            
-            for name, conversion in conversions.items():
-                self.__add_conversion(name, conversion)
-
+        #=======================================================================
+        # добавление стандартных преобразователей
+        #=======================================================================        
         self.__add_conversion("text", file_text)
         self.__add_conversion("stream", file_bin)
         
+        #=======================================================================
+        # добавление пользовательских преобразоваетелей
+        #=======================================================================        
+        if conversions:
+            assert isinstance(conversions, Section)
+            conversions.preload()            
+            for name, conversion in conversions.items():
+                self.__add_conversion(name, conversion)
+        
+        #=======================================================================
+        # добвление default- преобразователя
+        #=======================================================================        
         if not "default" in self.conversions:
             logger.info(" %s's default conversion added automaticly", self._name)
             self.__add_conversion("default", path_returner)
-
+            
+        #=======================================================================
+        # сканирование файлов в каталоге path
+        #=======================================================================
         if path and os.path.exists(path):
             
             self.files = {os.path.splitext(x)[0] + "_" 
@@ -114,10 +160,14 @@ class Storage():
             
     def __getattribute__(self, name):
         
-        getter = object.__getattribute__
+        #=======================================================================
+        # получение стандартных аттрибутов
+        #=======================================================================        
+        getter = object.__getattribute__        
         conversions = getter(self, "conversions")
         files = getter(self, "files")
         default = getter(self, "default")
+                
         if (not name in conversions) and (name in files):
             return default.go(name, self.files[name])
         else:
