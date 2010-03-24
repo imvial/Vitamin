@@ -36,7 +36,7 @@ class Rule():
         if matchobj:        
             _arguments = matchobj.groupdict()
             try:
-                return partial(getattr(self.__object, self.method), * _arguments)
+                return partial(getattr(self.__object, self.method), **_arguments)
             except AttributeError as err:
                 raise err
                 

@@ -3,7 +3,7 @@ from vitamin.config import Parameter, tweak, Section
 
 import logging
 from inspect import getargs
-from vitamin.modules.static.conversions import Conversion, file_text, file_bin, \
+from vitamin.modules.storage.conversions import Conversion, file_text, file_bin, \
     path_returner
 logger = logging.getLogger("storage")
 

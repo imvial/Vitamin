@@ -6,28 +6,31 @@ Templates = Section(
 Site = Section(
                
     FOLDERS=Section({
-        "styles": "path://simple.stuff.styles",
-        "scripts": "path://simple.stuff.scripts"
+                     
+        "styles": Section(
+            path="path://simple.stuff.styles",
+            extensions=[".css"],
+            conversions=Section(default="lazy://vitamin.modules.static.conversions::css_style"),
+            fakepath="files/styles"),
+            
+        "scripts": Section(
+            path="path://simple.stuff.scripts",
+            extensions=[".js"],
+            conversions=Section(default="lazy://vitamin.modules.static.conversions::jscript"),
+            fakepath="files/scripts"),
     }),
     
-    FOLDER_EXTENSIONS={
-        "styles": [".css"],
-        "scripts": [".js"]
-    },
-    
-    DEFAULT_CONVERSIONS=Section({
-        "styles": Section(default="lazy://vitamin.modules.static.conversions::css_style"),
-        "scripts": Section(default="lazy://vitamin.modules.static.conversions::jscript")
-    }),
     
     VIEWS=Section({
         "index" : "lazy://simple.views.index::IndexView",
+        "files" : "lazy://simple.views.file::FileGet"
     }),
                
     ROUTES=Section({
         "/" : "index",
         "/info" : "index.info",
-        "/wsgi" : "index.wsgi"
+        "/wsgi" : "index.wsgi",
+        "/files/{storage}/{file}" : "files"
     })
 )
 
