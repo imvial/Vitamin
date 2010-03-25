@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from functools import reduce
 from helpers.vitaparse import skip, ntype, maby, future, many, oneplus, finish
 from helpers.vitaparse.lexical import Spec, Tokenizer
-from vitamin.config import Parameter, Tweak
+from vitamin.config import Parameter, tweak
 
 #------------------------------------------------------------------------------ 
 # sqlite info here http://www.sqlite.org/lang.html
@@ -67,11 +67,11 @@ class IDefLoader(metaclass=ABCMeta):
     def load(self, name):
         pass
     
-class DictDefLoader(IDefLoader, Tweak("Database")):
+class DictDefLoader(IDefLoader):
     
-    def __init__(self):
+    def __init__(self, config=None):
         self.DEFINITIONS = Parameter()
-        self.tweak()
+        tweak(self, "Database", config)
         self.cache = {}
         if not isinstance(self.DEFINITIONS, dict):
             self.DEFINITIONS = self.DEFINITIONS.__dict__

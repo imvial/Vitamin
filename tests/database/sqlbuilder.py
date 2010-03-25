@@ -1,10 +1,10 @@
+from unittest import TestCase
 from vitamin.modules.database import PDO
-from vitamin.modules.database.fields import IntegerField, CharField, \
-    ForeignField
 from vitamin.modules.database.features import autoinc, primary, length, default, \
     notnull
+from vitamin.modules.database.fields import IntegerField, CharField, \
+    ForeignField
 from vitamin.modules.database.model import Model
-from unittest import TestCase
 
 class User(Model):
     

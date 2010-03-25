@@ -1,15 +1,15 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-from vitamin.config import Tweak, Parameter
-from vitamin.modules.database.sqlbuilder.constructor import Context
-from vitamin.modules.database.sqlbuilder import Builder
-from vitamin.modules.database.fields import CharField, IntegerField, Field
 from collections import OrderedDict
+from vitamin.config import tweak, Parameter
+from vitamin.modules.database.expression import Expression
+from vitamin.modules.database.fields import CharField, IntegerField, Field
 from vitamin.modules.database.queries import QueryCreate, QueryInsert, \
     QuerySelect, QueryUpdate, QueryDelete
+from vitamin.modules.database.sqlbuilder import Builder
+from vitamin.modules.database.sqlbuilder.constructor import Context
 from vitamin.modules.database.sqlbuilder.definitions import Names
-from vitamin.modules.database.expression import Expression
-import sys
 import sqlite3
+import sys
 
 #ip = re.compile("(?P<lim>2(?=[0-9]{2}))?(?(lim)([0-5][0-5])|([1][0-9][0-9]|[1-9]?[0-9]))$")
     
@@ -26,16 +26,19 @@ DB-API 2.0 interface, и все известные провайдеры
 http://www.python.org/dev/peps/pep-0249/
 """
 
-class PDO(Tweak("Database")):
+class PDO():
     
-    def __init__(self):
+    def __init__(self, config=None):
         
+        #поля конфигурационного файла
         self.PROVIDER = Parameter()
         self.LOCATION = Parameter()
         self.USER = Parameter()
         self.PASSWD = Parameter()
         self.CONNECT_WITH = Parameter() 
-        self.tweak()
+        
+        tweak(self, "Database", config)
+        
         self.models = []
         self.builder = Builder()
         self.connection = None        
