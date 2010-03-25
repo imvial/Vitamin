@@ -1,6 +1,6 @@
 from vitamin.interfaces import IView
 from vitamin.config import tweak, Parameter, Section
-from vitamin.modules.url import RuleFactory
+from vitamin.modules.routes import RuleFactory
 from vitamin.bindings.wsgi import HttpRequest
 
 class ViewSystem(dict):
