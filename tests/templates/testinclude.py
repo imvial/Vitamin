@@ -16,7 +16,7 @@ class IncludeTest(TestCase):
              
         config = dict(
             Templates=Section(
-                TEMPLATE_FOLDER="path://vitamin.modules.templates.tests.templates.include"
+                TEMPLATE_FOLDER="path://tests.templates.templates.include"
             ))
         
         self.system = Templates(config)

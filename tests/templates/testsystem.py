@@ -1,7 +1,6 @@
 from unittest import TestCase
 from vitamin.modules.templates import Templates
 from vitamin.config import tweak, Parameter, Section
-
 import os
 
 class TestSystem(TestCase):
@@ -11,7 +10,7 @@ class TestSystem(TestCase):
         TestCase.__init__(self, *args, **kwargs)        
         config = dict(
             Templates=Section(
-                TEMPLATE_FOLDER="path://vitamin.modules.templates.tests.templates"
+                TEMPLATE_FOLDER="path://tests.templates.templates"
             ))
         self.system = Templates(config)
         
