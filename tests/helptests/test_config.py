@@ -1,7 +1,7 @@
 from unittest import TestCase
 from helpers.tweak import tweak, Parameter, prepare
 
-from helpers.tests import test_site_configuration
+from tests.helptests import test_site_configuration
 prepare(test_site_configuration)
 
 class Simple():
