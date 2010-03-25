@@ -42,7 +42,11 @@ class Conversion():
         getter = object.__getattribute__
         storage = getter(self, "_storage")
         go = getter(self, "go")
-               
+        
+        if storage:
+            print(storage._name)
+            print(storage.files)
+        
         if storage and (name in storage.files):
             * names, ext = name.split("_")
             filename = "".join(names) + "." + ext
@@ -88,3 +92,8 @@ def file_bin(name, full_path, fakepath=None):
 @conversion
 def path_returner(name, full_path, fakepath=None):
     return _path(name, full_path, fakepath)
+
+@conversion
+def image(name, full_path, fakepath):
+    path = _path(name, full_path, fakepath)
+    return "<img src='{0}' alt='{0}'></img>".format(path)

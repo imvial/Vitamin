@@ -84,6 +84,13 @@ class Context(dict):
         else:
             #неразруливаемые типы(int, String, и проч.) просто возвращаются
             return var
+        
+    def __setattr__(self, name, value):
+        default = object.__setattr__
+        if not name in dir(self):
+            self[name] = value
+        else:
+            default(self, name, value)       
 
 class Aggregator(list):
 

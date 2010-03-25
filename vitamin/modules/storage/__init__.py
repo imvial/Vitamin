@@ -125,31 +125,23 @@ class Storage():
         self._fakepath = fakepath
         self._extensions = extensions
         
-        #=======================================================================
-        # добавление стандартных преобразователей
-        #=======================================================================        
+        # добавление стандартных преобразователей  
         self.__add_conversion("text", file_text)
         self.__add_conversion("stream", file_bin)
         
-        #=======================================================================
-        # добавление пользовательских преобразоваетелей
-        #=======================================================================        
+        # добавление пользовательских преобразоваетелей      
         if conversions:
             assert isinstance(conversions, Section)
             conversions.preload()            
             for name, conversion in conversions.items():
                 self.__add_conversion(name, conversion)
         
-        #=======================================================================
-        # добвление default- преобразователя
-        #=======================================================================        
+        # добвление default- преобразователя     
         if not "default" in self.conversions:
             logger.info(" %s's default conversion added automaticly", self._name)
             self.__add_conversion("default", path_returner)
             
-        #=======================================================================
         # сканирование файлов в каталоге path
-        #=======================================================================
         if path and os.path.exists(path):
             
             self.files = {os.path.splitext(x)[0] + "_" 
@@ -161,9 +153,7 @@ class Storage():
             
     def __getattribute__(self, name):
         
-        #=======================================================================
-        # получение стандартных полей
-        #=======================================================================        
+        # получение стандартных полей       
         getter = object.__getattribute__        
         conversions = getter(self, "conversions")
         files = getter(self, "files")

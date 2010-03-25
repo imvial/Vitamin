@@ -1,11 +1,17 @@
 from vitamin.interfaces import IView
+from vitamin.modules.templates import Context
 
 class IndexView(IView):
     
     def __call__(self, request):
         
         template = self.Site.Templates("index")
-        return template.render()
+        
+        context = Context()
+        context.header = "Привет, землянин!"
+        context.additional_header = "как жизнь?"
+        
+        return template.render(context)
    
     def wsgi(self, request):
         

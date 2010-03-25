@@ -10,14 +10,20 @@ Site = Section(
         "styles": Section(
             path="path://simple.stuff.styles",
             extensions=[".css"],
-            conversions=Section(default="lazy://vitamin.modules.static.conversions::css_style"),
+            conversions=Section(default="lazy://vitamin.modules.storage.conversions::css_style"),
             fakepath="files/styles"),
             
         "scripts": Section(
             path="path://simple.stuff.scripts",
             extensions=[".js"],
-            conversions=Section(default="lazy://vitamin.modules.static.conversions::jscript"),
+            conversions=Section(default="lazy://vitamin.modules.storage.conversions::jscript"),
             fakepath="files/scripts"),
+            
+        "images": Section(
+            path="path://simple.stuff.images",
+            extensions=[".jpg", ".png"],
+            conversions=Section(default="lazy://vitamin.modules.storage.conversions::image"),
+            fakepath="files/images"),
     }),
     
     

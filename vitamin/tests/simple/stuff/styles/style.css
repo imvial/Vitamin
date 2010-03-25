@@ -1,1 +1,42 @@
 body{background-color: black;}
+
+.content-wrapper{
+	margin: 0 auto;
+	width: 900px;
+	height: auto;
+	min-height: 800px;
+	overflow: visible;
+	background-color: black;
+	border: solid thin black;
+}
+
+.header h1{
+	font-size: 2em;
+	font-family: "Arial";
+	color: gray;
+	padding: 20px;
+	margin: 20px;
+	padding-bottom:0px;
+	margin-bottom:0px;
+}
+
+.header h3{
+	font-size: 1em;
+	font-family: "Arial";
+	color: gray;
+	padding:20px;
+	margin:20px;
+	padding-top:0px;
+	margin-top:0px;
+	margin-bottom:0px;
+	padding-bottom:0px;
+}
+
+.header {
+	overflow: hidden;
+}
+
+.header img{
+	position:relative;
+	left:-50px;
+}
