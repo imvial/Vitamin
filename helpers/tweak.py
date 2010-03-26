@@ -1,4 +1,4 @@
-from helpers.lazyimport import smartimport
+from helpers.lazyimport import smartimport, lazy_load_from_data, lazy_load
 from helpers.dictmapper import MappedDict
 from collections import UserList
 import os
@@ -8,26 +8,12 @@ class Null:
     pass
 
 config = None
-LAZY_IMPORT_PREFIX = "lazy://"
-PATH_RESOLVER_PREFIX = "path://"
+
 
 def prepare(module):
     global config
     config = module
     
-def lazy_load_from_data(self, index, item):
-    
-    if isinstance(item, str):
-        if item.startswith(LAZY_IMPORT_PREFIX):
-            self.data[index] = smartimport(item[len(LAZY_IMPORT_PREFIX):])
-        elif item.startswith(PATH_RESOLVER_PREFIX):
-            module = smartimport(item[len(PATH_RESOLVER_PREFIX):])
-            assert "__file__" in dir(module), "По указанному пути не найден модуль"
-            self.data[index] = os.path.dirname(module.__file__)
-        return self.data[index]
-    else:
-        return item
-
 #===============================================================================
 # Exceptions
 #===============================================================================
@@ -223,6 +209,9 @@ class __Tweak():
         конфигурации фреймворка и из конфигурации сайта, причем приоритет
         отдается последней.
         """
+        
+        if isinstance(site_config, str):
+            site_config = lazy_load(str)           
        
         section = cls.combine_sections(site_config, section)
         

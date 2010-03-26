@@ -1,32 +1,17 @@
 from unittest import TestCase
-from vitamin.modules.database import PDO
-from vitamin.modules.database.features import autoinc, primary, length, default, \
-    notnull
-from vitamin.modules.database.fields import IntegerField, CharField, \
-    ForeignField
-from vitamin.modules.database.model import Model
+from vitamin.modules.database import PDO, ORM
+from tests.database.models_for_test import User, Parent, Children
 
-class User(Model):
     
-    id = IntegerField(autoinc, primary)    
-    name = CharField(default("John"), length(100))
-    address = CharField(length(100))
+pdo = PDO(config="tests.framework.simple.config")
+orm = ORM(pdo=pdo, config="tests.framework.simple.config")
 
-class Parent(Model):
-    
-    id = IntegerField(autoinc, primary)
-    name = CharField(length(100), notnull)
-
-class Children(Model):
-    
-    id = IntegerField(autoinc, primary)    
-    parent = ForeignField(Parent)   
-    
-pdo = PDO()
-pdo.regiserModel(User)
-pdo.regiserModel(Parent)
-pdo.regiserModel(Children)
 pdo.connect()   
+
+orm.regiserModel(User)
+orm.regiserModel(Parent)
+orm.regiserModel(Children)
+
     
 class TestSQL(TestCase):
         

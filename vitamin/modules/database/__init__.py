@@ -8,13 +8,10 @@ from vitamin.modules.database.queries import QueryCreate, QueryInsert, \
 from vitamin.modules.database.sqlbuilder import Builder
 from vitamin.modules.database.sqlbuilder.constructor import Context
 from vitamin.modules.database.sqlbuilder.definitions import Names
+import unittest
 import sqlite3
 import sys
 
-#ip = re.compile("(?P<lim>2(?=[0-9]{2}))?(?(lim)([0-5][0-5])|([1][0-9][0-9]|[1-9]?[0-9]))$")
-    
-#class IProvider(ABCMeta):
-#class ICursor
 """
 Тут оговорочка. Не будем мутить воду и изобратать
 какие- то интерфейсы для провайдеров баз данных,
@@ -39,10 +36,7 @@ class PDO():
         
         tweak(self, "Database", config)
         
-        self.models = []
-        self.builder = Builder()
-        self.connection = None        
-        self.preload()
+        self.connection = None       
         
     def connect(self):
         _args = []
@@ -51,23 +45,9 @@ class PDO():
                 _args.append(getattr(self, arg))
             except AttributeError as err:
                 raise err
-            print(_args)
             self.connection = self.PROVIDER.connect(*_args)
-        if self.connection:             
-            print("connected")
-            
-    def regiserModel(self, model):
-        model.PDO = self
-        self.models.append(model)
-        
-    def preload(self):
-        QueryCreate.builder = self.builder.create(Names.Create.definition)
-        QueryInsert.builder = self.builder.create(Names.Insert.definition)
-        QuerySelect.builder = self.builder.create(Names.Select.definition)
-        QueryUpdate.builder = self.builder.create(Names.Update.definition)
-        QueryDelete.builder = self.builder.create(Names.Delete.definition)
-        Expression.builder = self.builder.create(Names.Expression.definition)
-        
+        return self.connection           
+               
     def gosql(self, function):
         if self.connection:
             return self.connection.execute(function())
@@ -78,4 +58,31 @@ class PDO():
         if self.connection:
             return self.connection.execute(query)
         else:
-            raise Exception("No connection")            
+            raise Exception("No connection")
+        
+class ORM():
+    
+    def __init__(self, pdo, config):
+        
+        self.builder = Builder()
+        self.models = []
+        self.pdo = pdo
+        self.preload()
+        
+    def regiserModel(self, model):
+        
+        model.PDO = self.pdo
+        self.models.append(model)   
+        
+    def preload(self):
+        
+        QueryCreate.builder = self.builder.create(Names.Create.definition)
+        QueryInsert.builder = self.builder.create(Names.Insert.definition)
+        QuerySelect.builder = self.builder.create(Names.Select.definition)
+        QueryUpdate.builder = self.builder.create(Names.Update.definition)
+        QueryDelete.builder = self.builder.create(Names.Delete.definition)
+        Expression.builder = self.builder.create(Names.Expression.definition)
+        
+
+        
+            

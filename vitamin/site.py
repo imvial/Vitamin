@@ -79,7 +79,7 @@ class Site():
 
     def __init__(self):
         
-        self.__models = None
+        self.__database = None
         self.__views = None
         self.__logic = None
         self.__templates = None

@@ -35,6 +35,12 @@ class SiteManager():
     
     def load_site(self, path):
         
+        """
+        Загружает сайт, расположенный в указанном каталоге
+        @path, возвразает экземпляр класса Site с необходимым
+        функционалом, созданным на основе анализа модулей сайта
+        """
+        
         assert os.path.exists(path)
         
         templates_part = "templates"        
@@ -72,7 +78,8 @@ class SiteManager():
             site.load_views()
             
         self.__site = site
-
+        
+        return site
     
     def unload_site(self, name):
         pass

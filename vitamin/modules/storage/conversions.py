@@ -10,11 +10,47 @@ def conversion(function):
 
 class Conversion():
     
+    """
+    Conversion - объект- преобразователь. Используется
+    для получения файлов из хранилища в необходимом
+    пользователю формате. Преобразователи могут объединяться
+    в цепочки при помощи операции суммирования, создавая новый
+    преобразователь. Действие нового преобразователя будет
+    заключаться в вызове цепочки преобразователей с передачей
+    результатов выполнения предъидущего преобразователя
+    следующему.    
+    
+    Первый преобразователь в цепочке принимает три аргумента:
+        name - имя файла
+        full_path - полный путь до файла в файловой системе
+        fakepath - фальшивый путь, указанный в файле конфигурации
+        
+    Преобразователь переопределяет функцию __getattribute__
+    для обеспечения прозрачного доступа к файлам как к
+    полям класса (см. storage)
+    """
+    
     def __init__(self, conversion):  
         
         self._storage = None  
         self.go = None
-        self.__assign(conversion)        
+        self.__assign(conversion)  
+        
+    #===========================================================================
+    # Интрфейс комбинатора
+    #===========================================================================
+        
+    def __add__(self, right):
+        
+        assert isinstance(right, Conversion)
+        
+        @Conversion
+        def __go(name, full_path, fakepath=None):
+            res = self.go(name, full_path, fakepath)
+            return right.go(res)
+        
+        return __go
+              
         
     def __assign(self, callable):  
              
@@ -27,15 +63,6 @@ class Conversion():
         
     def set_storage(self, storage):          
         self._storage = storage
-        
-    def __add__(self, right):
-        
-        assert isinstance(right, Conversion)
-        
-        @Conversion
-        def __go(name, full_path, fakepath=None):
-            res = self.go(name, full_path, fakepath)
-            return right.go(res)
         
     def __getattribute__(self, name):
         
@@ -54,8 +81,7 @@ class Conversion():
         else:
             return getter(self, name)
         
-    def __call__(self, name):
-        
+    def __call__(self, name):        
         return self.__getattribute__(name.replace(".", "_"))
 
 def _path(name, full, fake):
@@ -67,6 +93,10 @@ def _path(name, full, fake):
         name = name[:pos_of_space] + "." + name[pos_of_space + 1:]
 
     return os.path.join(fake, name) if fake else full
+
+#===============================================================================
+# Стандартные преобразователи
+#===============================================================================
 
 @conversion
 def css_style(name, full_path, fakepath=None):    

@@ -34,9 +34,11 @@ Site = Section(
                
     ROUTES=Section({
         "/" : "index",
-        "/info" : "index.info",
         "/wsgi" : "index.wsgi",
         "/files/{storage}/{file}" : "files"
-    })
+    }),
+    
+   DATABASE=Section(
+        MODELS_INIT="lazy://simple.models")
 )
 
