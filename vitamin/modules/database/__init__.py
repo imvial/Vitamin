@@ -23,6 +23,118 @@ DB-API 2.0 interface, и все известные провайдеры
 http://www.python.org/dev/peps/pep-0249/
 """
 
+class Data():
+    
+    """
+    Объект- контейнер, который обрабатывает данные
+    курсоров базы данных, имитирует курсоры и позволяет
+    выполнять некоторые другие операции над данными.
+    Создается на этапе выполнения запроса к базе данных
+    на основе курсора, который выполнял операцию
+    cursor.execute, также может использоваться сам по
+    себе для обработки и аггрегации табличных данных
+    """
+    
+    header = None
+    rows = None
+    row_length = 0
+    
+    def __init__(self, cursor=None):
+        
+        self.head = []
+        self.rows = []
+        if cursor:
+            if cursor.description:
+                self.description = cursor.description
+                self.row_length = len(cursor.description)
+                self.head = [name[0] for name in cursor.description]
+                self.append_iter(cursor)
+        
+    def set_head(self, *names):
+        
+        """
+        Используется в том случае, когда класс создается
+        без объекта cursor. Устанавливает заголовок таблицы
+        и число столбцов в таблице данных.
+        """
+        
+        assert not self.row_length
+        self.row_length = len(names)
+        self.header = names
+        
+    def append_row(self, row):
+        
+        assert row
+        assert isinstance(row, (tuple, list))
+        assert len(row) == self.row_length, "%s:%s" % (len(row), self.row_length)
+        
+        self.rows.append(row)
+        
+    def append_iter(self, cursor):
+        
+        for row in cursor:
+            self.append_row(row)
+
+    def append_items(self, *row):
+        
+        self.append_row(row)
+               
+    def __iter__(self):
+        
+        """
+        Стандартное поведение функции __iter__ эквивалентно
+        выполнению self.iter_rows
+        """
+        
+        return self.iter_rows()
+        
+    def iter_rows(self):
+        
+        """
+        Возвращает генератор, итерирующий строки
+        таблицы данных
+        """
+        
+        def __iterator():            
+            for row in self.rows:
+                yield row
+            raise StopIteration()
+        
+        return __iterator()
+    
+    def iter_columns(self):
+        
+        """
+        Возвращает генератор, итерирующий столбцы
+        таблицы данных
+        """
+        
+        def __iterator():
+            for i in range(self.row_lenght):
+                yield self.column(i)
+            raise StopIteration
+                            
+        return __iterator()
+    
+    def row(self, index):
+        
+        """
+        Возвращает строку из набора данных с порядковым номером
+        @index
+        """
+        
+        return self.rows[index]
+    
+    def column(self, index):
+        
+        """
+        Возвращает стоблец из набора данных с порядковым номером
+        @index
+        """
+        
+        return [r[index] for r in self.rows]      
+         
+
 class PDO():
     
     def __init__(self, config=None):
@@ -33,11 +145,12 @@ class PDO():
         self.USER = Parameter()
         self.PASSWD = Parameter()
         self.CONNECT_WITH = Parameter() 
+        self.DATA_TYPE = Parameter(Data)
         
         tweak(self, "Database", config)
-        
-        self.connection = None       
-        
+
+        self.connection = None   
+
     def connect(self):
         _args = []
         for arg in self.CONNECT_WITH:
@@ -50,13 +163,15 @@ class PDO():
                
     def gosql(self, function):
         if self.connection:
-            return self.connection.execute(function())
+            cursor = self.connection.execute(function())
+            return self.DATA_TYPE(cursor) if self.DATA_TYPE else cursor
         else:
             raise Exception("No connection")
     
     def execute(self, query):
         if self.connection:
-            return self.connection.execute(query)
+            cursor = self.connection.execute(query)
+            return self.DATA_TYPE(cursor) if self.DATA_TYPE else cursor
         else:
             raise Exception("No connection")
         
