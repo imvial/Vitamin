@@ -38,7 +38,7 @@ class Mutagen():
     
     listOfInclude = []
     
-    def treeToDict(self, tokenList):
+    def treeToDict(self, tokenList, tokenType=BlockChunk):
         
         """
         Разворачивает иерархическую структуру токенов в списке 
@@ -47,11 +47,11 @@ class Mutagen():
         """
         
         lst = {x.name:x for x in tokenList \
-                if type(x) == BlockChunk}     
+                if type(x) == tokenType}     
                 
         for token in tokenList:
             if token.children:
-                lst.update(self.treeToDict(token.children))
+                lst.update(self.treeToDict(token.children,tokenType))
         return lst
                   
                    
@@ -81,6 +81,18 @@ class Mutagen():
         except KeyError:
             return False
         
+    def include(self,loader,template):
+        dictofInclud=self.treeToDict(template.chunks, IncludeChunk) 
+        for name,token in dictofInclud.items():
+            includeToken=loader(name)
+            dictofInclude=self.treeToDict(includeToken.chunks, IncludeChunk)
+            for n,c in dictofInclude.items():
+                if n==template.name:
+                    raise LoopException
+            includeToken=self.mutate(loader, includeToken)            
+            dictofInclud[name].children=includeToken.chunks            
+        return template 
+      
     def listInclude(self, tokenList, loader):
          
             lst = []
@@ -108,7 +120,7 @@ class Mutagen():
             if includToken.name in self.listOfInclude:
                 raise LoopException(self.listOfInclude.pop(), includToken.name)
             self.listOfInclude.append(includToken.name)                                   
-            includeTemplate = loader.load(includToken.name)
+            includeTemplate = loader(includToken.name)
             includeTemplate = self.mutate(loader, includeTemplate)
             return includeTemplate.chunks
         
@@ -152,7 +164,7 @@ class Mutagen():
             
             
         print("extending:", extendBlock.name)
-        baseTemplate = loader.load(extendBlock.name)
+        baseTemplate = loader(extendBlock.name)
         baseTemplate = self.mutate(loader, baseTemplate)    
         blocksDict = self.treeToDict(baseTemplate.chunks)
         candidates = [token for token in template.chunks 

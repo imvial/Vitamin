@@ -15,7 +15,15 @@ class RenderTest(TestCase):
         
         a = template.render(Context(name="Avatar"))
         self.assertEqual(a, "text me avatar AVATAR Avatar")
-         
+    def test_if_with_logicChain(self):       
+        text = """{if not((a1 and (a1 xor a1) and a1) xor b1)}привет{else}пока{/if}"""
+        template = Template(text)
+        
+        a = template.render(Context(a1=1,b1=1))
+        self.assertEqual(a, "пока")        
+        a = template.render(Context(a1=1,b1=0))
+        self.assertEqual(a, "привет") 
+            
     def test_if(self):       
         text = """{if angry < 5}привет{else}пока{/if}"""
         template = Template(text)
@@ -61,8 +69,7 @@ class RenderTest(TestCase):
         text = """{#'Комментарий'}"""
         template = Template(text)
         a = template.render()
-        self.assertEquals(a, "")
-        
+        self.assertEquals(a, "")    
     def test_strange_cycle_behaviour(self):
         text = """
         {for x in range(10)}

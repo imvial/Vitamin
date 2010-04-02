@@ -1,6 +1,7 @@
-from vitamin.modules.templates.context import ContextFunction
+from vitamin.modules.templates.context import ContextFunction, ContextVar
 from http.cookiejar import logger
 import logging
+import operator as ops
 
 #$Rev: 122 $     
 #$Author: fnight $  
@@ -243,11 +244,8 @@ class QualChunk(Chunk):
         operator - один из операторов выражения
         """       
             
-        Chunk.__init__(self)
-        self.invert = False
-        self.value_left = head.left
-        self.value_right = head.right
-        self.operator = head.operator
+        Chunk.__init__(self)                
+        self.logic = head        
         self.trueChunks = body.true_children
         self.falseChunks = body.false_children
 
@@ -271,18 +269,11 @@ class QualChunk(Chunk):
         Вариант второй: заданы обе переменные и опрератор.
         В этом случае поведение оператора эквивалентно
         оператору if в Python.
-        """
+        """     
         
-        assert self.value_left
                 
-        ctx_value_left = context.get(self.value_left)
-        if not self.value_right:                            
-            result = bool(ctx_value_left)
-        else:   
-            ctx_value_right = context.get(self.value_right)
-            result = self.operator(ctx_value_left, ctx_value_right)  
-            
-        if self.invert: result = not result
+        
+        result=self.logic.render(context,aggregator)
         toRender = self.trueChunks if result else self.falseChunks
                 
         return self.renderChildren(context, aggregator, toRender)
@@ -363,6 +354,66 @@ class IncludeChunk(Chunk):
         self.children = []
     
     def render(self, context, aggregator):        
-        return         
-    
+        self.renderChildren(context, aggregator, self.children)  
+              
+class LogicChunk(Chunk):
+    """
+    Токен, отвечающий за рендер логических цепочек
+    reverse - имеется ли унарный оператор not
+    left - самая левая часть цепочки
+    other - все остальное
+    """
+    def __init__(self,left,other=[],reverse=False):
+        self.left=left        
+        self.other=other
+        self.children=[] 
+        self.reverse = reverse 
+        
+    def render(self,context, aggregator,reverse=False):
+        
+        listOfTerm=[]  
+        listOfOperators=[ops.eq,ops.ne,ops.lt,ops.gt,ops.contains,ops.iand,ops.ior,ops.ixor]
+        if isinstance(self.left,LogicChunk):
+            listOfTerm.append(self.left.render(context,aggregator,self.reverse))
+        else:
+            if isinstance(self.left,ContextVar):
+                listOfTerm.append(context.get(self.left))
+            else:
+                listOfTerm.append(self.left)
+            
+        for x in self.other:
+            operator, term = x
+            listOfTerm.append(operator)
+            if isinstance(term,tuple):
+                listOfTerm.append(term[1].render(context,aggregator,True))
+            elif isinstance(term,LogicChunk):
+                listOfTerm.append(term.render(context,aggregator))
+            else:
+                if isinstance(term,ContextVar):                    
+                    listOfTerm.append(context.get(term))
+                else:
+                    listOfTerm.append(term)
+        
+        for x in listOfOperators:
+            i=1
+            while i<len(listOfTerm):
+                if listOfTerm[i]==x:                    
+                    a=listOfTerm[i-1]
+                    b=listOfTerm[i+1]
+                    del listOfTerm[i:i+2]
+                    listOfTerm[i-1]=x(a,b)
+                    i=i-2
+                i=i+2
+        assert len(listOfTerm)==1
+        if reverse:
+            listOfTerm[0]=not(listOfTerm[0])        
+        return listOfTerm[0]
+                    
+                 
+         
+       
+                
+            
+        
+   
     

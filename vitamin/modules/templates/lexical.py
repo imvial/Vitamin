@@ -1,7 +1,7 @@
 from helpers.vitaparse.lexical import BlockSpec, Spec, BlockTokenizer
 from helpers.vitaparse import exact, ntype, future, skip, maby, many, finish, \
     Ignore
-from vitamin.modules.templates.chunks import ChainChunk, QualChunk, LoopChunk, BlockChunk, TextChunk, ModChunk, ExtendChunk, IncludeChunk
+from vitamin.modules.templates.chunks import ChainChunk, QualChunk, LoopChunk, BlockChunk, TextChunk, ModChunk, ExtendChunk, IncludeChunk, LogicChunk
 from vitamin.modules.templates.context import ContextVar, ContextFunction
 from functools import partial
 
@@ -28,6 +28,7 @@ SHORT_CLOSE = "]"
 LONG_OPEN = "{"
 LONG_CLOSE = "}"
 
+
 import operator as ops
 def select_opt(value): 
        
@@ -43,8 +44,21 @@ def select_opt(value):
         return ops.lt
     elif value == "!=":
         return ops.ne
-    elif value == "==":
+    elif value == "=":
         return ops.eq     
+def select_logic(value): 
+       
+    """
+    Преобразование логических операторов из строки в фукнцию
+    """
+    
+    if value == "or":
+        return ops.ior
+    elif value == "xor":
+        return ops.ixor
+    elif value == "and":
+        return ops.iand
+         
 
 class String(str): pass
 
@@ -65,6 +79,7 @@ class TemplateAnalyzer():
         Spec("space", "\s+"),
         Spec("comment", "[#]"),
         Spec("end", "[/]\w+"),
+        Spec("logic","and|or|xor|not"),
         Spec("word", "[a-zA-Z][\w0-9_.]*"),
         Spec("integer", "[0-9]+"),
         Spec("binary", "[<>|=]|in"),
@@ -73,7 +88,8 @@ class TemplateAnalyzer():
         Spec("comma", ","),
         Spec("descr", "[:]"),
         Spec("string", "'.*?'"),
-        Spec("plus", "[+-]")]
+        Spec("plus", "[+-]")
+        ]
     
     #анализ только данных блоков текста
     delimeters = [
@@ -137,9 +153,12 @@ class TemplateAnalyzer():
         word = ntype("word") >> (lambda t: ContextVar(t.value))
         integer = ntype("integer") >> (lambda t: int(t.value))
         binopt = ntype("binary") >> (lambda t: select_opt(t.value))
+        logicopt = ntype("logic") >> (lambda t: select_logic(t.value))
         string = ntype("string") >> (lambda t: String(t.value[1:-1]))
         number = integer
         twospot = skip(exact(":"))
+        inot = exact("not") >> (lambda t: ops.not_)
+        
       
         #=======================================================================
         # границы блоков
@@ -153,6 +172,8 @@ class TemplateAnalyzer():
         
         stuff = future()
         
+       
+    
         #=======================================================================
         # chain chunk
         #=======================================================================
@@ -174,17 +195,24 @@ class TemplateAnalyzer():
         #=======================================================================
         arrow = skip(exact(">"))
         short_meat.define((word + many(arrow + function)) >> self.__chain)
-                
+              
         #=======================================================================
         # if chunk
         #=======================================================================
         endif = future()
+        logic = future() 
         ifchunk = (long_op + (rif >> create_end(endif)) + 
-            (((number | word) + maby(binopt + (number | word))) >> self.__if_head) + 
+            logic + 
             long_cl + 
             ((stuff + maby(long_op + relse + long_cl + stuff)) >> self.__if_body) + 
             endif) >> self.__if
-
+          #=======================================================================
+        # logic chunk  
+        #=======================================================================
+        term = future()
+                      
+        logic.define( ((maby(inot)+skip(exact("("))+logic+skip(exact(")")))|(term >> self.__term)) + many(logicopt + ((maby(inot)+skip(exact("("))+logic+skip(exact(")")))|(term >> self.__term)))>>self.__logic)   
+        term.define((number | word) + maby(binopt + (number | word)))
         #=======================================================================
         # for chunk
         #=======================================================================
@@ -230,10 +258,9 @@ class TemplateAnalyzer():
         #=======================================================================
         # разный стафф
         #=======================================================================
-        stuff.define(many(
-            text | short_block | ifchunk | 
+        stuff.define(many(text | short_block |ifchunk | 
             forchunk | block_chunk | mod_chunk | 
-            comment | extend | include))           
+            comment | extend | include ))           
         
         return [x for x in (stuff + finish()).parse(tokens)[0] if not isinstance(x, Ignore)]
     
@@ -284,12 +311,40 @@ class TemplateAnalyzer():
                 self.false_children = []
     
     def __if(self, values):
-        head = values[0]
-        assert isinstance(head, self.__if_head)
+        head = values[0]        
         body = values[1]
         assert isinstance(body, self.__if_body)
         return QualChunk(head, body)
+    #===========================================================================
+    # logic chunk processor
+    #===========================================================================
+    def __term(self,values):
+        try:
+            left = values[0]
+            if len(values) == 2:
+                operator = values[1][0]
+                right = values[1][1]
+                return LogicChunk(left,[(operator,right)])
+            else:
+                right = None
+                operator = None
+                return LogicChunk(left)
+        except:
+            return LogicChunk(values)                
     
+    def __logic(self,values): 
+                
+        first,*other = values        
+        if isinstance(first,LogicChunk):
+            return LogicChunk(first,other)                  
+        else:             
+            return LogicChunk(first[1],other,True)           
+            
+        
+                
+            
+        
+        
     #===========================================================================
     # for chunk processor
     #===========================================================================

@@ -33,8 +33,11 @@ class FileLoader(ITemplateLoader):
             return os.path.join(self.TEMPLATE_FOLDER, f) 
    
     def loadText(self, name, text):
-        return Template(text, name)    
-
+        return Template(text, name) 
+       
+    def __call__(self,name):
+        return self.load(name)
+    
     def load(self, name):
         
         path = self.__find__(self.tplExt, name)
