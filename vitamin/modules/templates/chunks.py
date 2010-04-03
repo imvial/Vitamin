@@ -157,7 +157,7 @@ class ChainChunk(Chunk):
         self.children += list(map(FunctionChunk, functions))               
                             
     #@timer("Цепочка отрисована за")
-    def render(self, context, aggregator):
+    def render(self, context, aggregator,addToAggr=True):
         """Процедура отрисовки цепочки.
         После отрисовки всех звеньев на результат применяются
         модификаторы"""
@@ -166,9 +166,9 @@ class ChainChunk(Chunk):
             result = function.render(context, result)
     
         logger.debug("chain: result %s", str(result))
-
-        aggregator.append(str(result))
-
+        if addToAggr:
+            aggregator.append(str(result))
+        return result
 class LoopChunk(Chunk):
 
     """Токен, позволяющий использовать циклы в шаблонах.
@@ -364,36 +364,28 @@ class LogicChunk(Chunk):
     other - все остальное
     """
     def __init__(self,left,other=[],reverse=False):
+        Chunk.__init__(self)
         self.left=left        
-        self.other=other
-        self.children=[] 
+        self.other=other         
         self.reverse = reverse 
         
-    def render(self,context, aggregator,reverse=False):
-        
-        listOfTerm=[]  
+    def __transform(self,value):
+        """Преобразование строк в нормальные типы. 
+            По идее здесь не нужен а нужен в функции context.get"""
+        result=value
+        if not(isinstance(value,bool)):
+            try:
+                result= int(value)
+            except:
+                try:
+                    result = float(value)
+                except:
+                    pass
+        return result 
+    
+    def __convolution(self,listOfTerm):
+        """Свертка логической цепочки в соответствии с правилами"""
         listOfOperators=[ops.eq,ops.ne,ops.lt,ops.gt,ops.contains,ops.iand,ops.ior,ops.ixor]
-        if isinstance(self.left,LogicChunk):
-            listOfTerm.append(self.left.render(context,aggregator,self.reverse))
-        else:
-            if isinstance(self.left,ContextVar):
-                listOfTerm.append(context.get(self.left))
-            else:
-                listOfTerm.append(self.left)
-            
-        for x in self.other:
-            operator, term = x
-            listOfTerm.append(operator)
-            if isinstance(term,tuple):
-                listOfTerm.append(term[1].render(context,aggregator,True))
-            elif isinstance(term,LogicChunk):
-                listOfTerm.append(term.render(context,aggregator))
-            else:
-                if isinstance(term,ContextVar):                    
-                    listOfTerm.append(context.get(term))
-                else:
-                    listOfTerm.append(term)
-        
         for x in listOfOperators:
             i=1
             while i<len(listOfTerm):
@@ -404,7 +396,36 @@ class LogicChunk(Chunk):
                     listOfTerm[i-1]=x(a,b)
                     i=i-2
                 i=i+2
-        assert len(listOfTerm)==1
+        assert len(listOfTerm)==1          
+     
+    def render(self,context, aggregator,reverse=False):        
+        listOfTerm=[]          
+        if isinstance(self.left,LogicChunk):
+            listOfTerm.append(self.left.render(context,aggregator,self.reverse))
+        elif isinstance(self.left,ChainChunk):
+            listOfTerm.append(self.__transform(self.left.render(context,aggregator,False)))
+        else:            
+            if isinstance(self.left,ContextVar):
+                listOfTerm.append(self.__transform(context.get(self.left)))
+            else:
+                listOfTerm.append(self.left)
+            
+        for x in self.other:
+            operator, term = x
+            listOfTerm.append(operator)
+            if isinstance(term,tuple):
+                listOfTerm.append(term[1].render(context,aggregator,True))
+            elif isinstance(term, LogicChunk):
+                listOfTerm.append(term.render(context,aggregator))
+            elif isinstance(term,ChainChunk):
+                listOfTerm.append(self.__transform(term.render(context,aggregator,False)))
+            else:                
+                if isinstance(term,ContextVar):                    
+                    listOfTerm.append(self.__transform(context.get(term)))
+                else:
+                    listOfTerm.append(term)
+        if len(listOfTerm) != 1:
+            self.__convolution(listOfTerm)       
         if reverse:
             listOfTerm[0]=not(listOfTerm[0])        
         return listOfTerm[0]

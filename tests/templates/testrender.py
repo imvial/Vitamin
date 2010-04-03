@@ -3,7 +3,11 @@ from vitamin.modules.templates.lexical import TemplateAnalyzer
 from vitamin.modules.templates.template import Template
 from vitamin.modules.templates.context import Context
 
-    
+def foo(value):
+    if int(value)==1:
+        return 0
+    else:
+        return 1
 class RenderTest(TestCase):
     
     def setUp(self):
@@ -16,13 +20,13 @@ class RenderTest(TestCase):
         a = template.render(Context(name="Avatar"))
         self.assertEqual(a, "text me avatar AVATAR Avatar")
     def test_if_with_logicChain(self):       
-        text = """{if not((a1 and (a1 xor a1) and a1) xor b1)}привет{else}пока{/if}"""
+        text = """{if not((a1 and (a1 > a1) and a1) xor (b1 > foo()))}привет{else}пока{/if}"""
         template = Template(text)
         
-        a = template.render(Context(a1=1,b1=1))
-        self.assertEqual(a, "пока")        
-        a = template.render(Context(a1=1,b1=0))
-        self.assertEqual(a, "привет") 
+        a = template.render(Context(a1=1,b1=1,foo=foo))
+        self.assertEqual(a, "привет")        
+        a = template.render(Context(a1=1,b1=0,foo=foo))
+        self.assertEqual(a, "пока") 
             
     def test_if(self):       
         text = """{if angry < 5}привет{else}пока{/if}"""

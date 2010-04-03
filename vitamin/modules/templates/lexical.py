@@ -82,7 +82,7 @@ class TemplateAnalyzer():
         Spec("logic","and|or|xor|not"),
         Spec("word", "[a-zA-Z][\w0-9_.]*"),
         Spec("integer", "[0-9]+"),
-        Spec("binary", "[<>|=]|in"),
+        Spec("binary", "[<>|=]|in|!="),
         Spec("special", "[[]]"),
         Spec("brace", "\(|\)"),
         Spec("comma", ","),
@@ -212,7 +212,7 @@ class TemplateAnalyzer():
         term = future()
                       
         logic.define( ((maby(inot)+skip(exact("("))+logic+skip(exact(")")))|(term >> self.__term)) + many(logicopt + ((maby(inot)+skip(exact("("))+logic+skip(exact(")")))|(term >> self.__term)))>>self.__logic)   
-        term.define((number | word) + maby(binopt + (number | word)))
+        term.define((short_meat|number|word) + maby(binopt + (short_meat|number|word)))
         #=======================================================================
         # for chunk
         #=======================================================================
@@ -258,7 +258,7 @@ class TemplateAnalyzer():
         #=======================================================================
         # разный стафф
         #=======================================================================
-        stuff.define(many(text | short_block |ifchunk | 
+        stuff.define(many(text | ifchunk |short_block | 
             forchunk | block_chunk | mod_chunk | 
             comment | extend | include ))           
         
